@@ -1,4 +1,5 @@
 import { supabaseAdmin, IdeaWithLatest } from "./db";
+import { MaslowLevel, MASLOW_LABELS_SK, MASLOW_HUE } from "./rubric";
 
 export type DashboardStats = {
   ideas: IdeaWithLatest[];
@@ -11,6 +12,8 @@ export type DashboardStats = {
   weeklyValidations: number[]; // last 8 weeks
   top5: IdeaWithLatest[];
   uniqueAuthors: string[];
+  byMaslow: Array<{ level: MaslowLevel; name: string; hue: string; count: number; avg: number | null }>;
+  maslowClassifiedCount: number;
 };
 
 export async function loadDashboardStats(): Promise<DashboardStats> {
@@ -69,6 +72,26 @@ export async function loadDashboardStats(): Promise<DashboardStats> {
 
   const uniqueAuthors = Array.from(new Set(ideas.map((i) => i.author_email))).sort();
 
+  // Maslow distribution — prefer Claude's latest classification, fall back
+  // to author's choice, ignore ideas with neither.
+  const byMaslow = ([1, 2, 3, 4, 5] as MaslowLevel[])
+    .map((level) => {
+      const items = ideas.filter((i) => (i.latest_maslow_level ?? i.maslow_level) === level);
+      const withScore = items.filter((i) => i.latest_score !== null);
+      const avg =
+        withScore.length > 0
+          ? withScore.reduce((a, i) => a + (i.latest_score ?? 0), 0) / withScore.length
+          : null;
+      return {
+        level,
+        name: MASLOW_LABELS_SK[level],
+        hue: MASLOW_HUE[level],
+        count: items.length,
+        avg: avg !== null ? Math.round(avg * 100) / 100 : null,
+      };
+    });
+  const maslowClassifiedCount = byMaslow.reduce((a, b) => a + b.count, 0);
+
   return {
     ideas,
     total: ideas.length,
@@ -80,5 +103,7 @@ export async function loadDashboardStats(): Promise<DashboardStats> {
     weeklyValidations,
     top5,
     uniqueAuthors,
+    byMaslow,
+    maslowClassifiedCount,
   };
 }

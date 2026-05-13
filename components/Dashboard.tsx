@@ -57,7 +57,11 @@ export function Dashboard({ stats, myEmail }: Props) {
       <div className="fa-stage-top-light" />
       <div
         className="fa-chrome"
-        style={{ display: "grid", gridTemplateColumns: "260px 1fr", alignItems: "start" }}
+        style={{
+          display: "grid",
+          gridTemplateColumns: "260px 1fr",
+          height: "calc(100vh - 48px)",
+        }}
       >
         {/* ── Sidebar ── */}
         <aside
@@ -66,11 +70,9 @@ export function Dashboard({ stats, myEmail }: Props) {
             flexDirection: "column",
             padding: "20px 16px",
             borderRight: "1px solid rgba(255,255,255,0.05)",
-            background: "linear-gradient(180deg, rgba(8,8,10,0.6) 0%, rgba(4,4,6,0.6) 100%)",
-            position: "sticky",
-            top: 0,
-            height: "100vh",
+            background: "linear-gradient(180deg, rgba(12,12,14,0.85) 0%, rgba(6,6,8,0.85) 100%)",
             overflowY: "auto",
+            minHeight: 0,
           }}
         >
           {/* Brand */}
@@ -148,7 +150,15 @@ export function Dashboard({ stats, myEmail }: Props) {
         </aside>
 
         {/* ── Main ── */}
-        <main style={{ display: "flex", flexDirection: "column", overflow: "hidden", minWidth: 0 }}>
+        <main
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            overflowY: "auto",
+            minWidth: 0,
+            minHeight: 0,
+          }}
+        >
           {/* Topbar */}
           <header
             style={{
@@ -273,10 +283,110 @@ export function Dashboard({ stats, myEmail }: Props) {
             style={{
               padding: "6px 24px 12px",
               display: "grid",
-              gridTemplateColumns: "1fr 1fr",
+              gridTemplateColumns: "1.1fr 1fr 1fr",
               gap: 12,
             }}
           >
+            {/* Maslow distribution */}
+            <div className="fa-card">
+              <div className="fa-card-inner" style={{ padding: 18 }}>
+                <SectionHeader label="Podľa Maslow potrieb" sub={
+                  stats.maslowClassifiedCount > 0
+                    ? `${stats.maslowClassifiedCount} z ${stats.total} klasifikovaných`
+                    : "Žiadne klasifikované"
+                } />
+                {stats.maslowClassifiedCount === 0 ? (
+                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>
+                    Pri zadaní idey vyber Maslow úroveň, alebo nechaj Claude aby ju doplnil pri validácii.
+                  </div>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {stats.byMaslow.map((m) => {
+                      const pct =
+                        stats.maslowClassifiedCount > 0
+                          ? (m.count / stats.maslowClassifiedCount) * 100
+                          : 0;
+                      return (
+                        <div key={m.level} style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                          <div
+                            style={{
+                              display: "grid",
+                              gridTemplateColumns: "16px 1fr auto auto",
+                              alignItems: "center",
+                              gap: 8,
+                              fontSize: 11,
+                            }}
+                          >
+                            <span
+                              style={{
+                                width: 16,
+                                fontSize: 10,
+                                fontWeight: 700,
+                                color: m.hue,
+                                fontVariantNumeric: "tabular-nums",
+                              }}
+                            >
+                              M{m.level}
+                            </span>
+                            <span
+                              style={{
+                                color: "rgba(255,255,255,0.75)",
+                                whiteSpace: "nowrap",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                              }}
+                            >
+                              {m.name}
+                            </span>
+                            <span
+                              style={{
+                                color: "rgba(255,255,255,0.4)",
+                                fontVariantNumeric: "tabular-nums",
+                                fontSize: 10,
+                                minWidth: 22,
+                                textAlign: "right",
+                              }}
+                            >
+                              {m.count}
+                            </span>
+                            <span
+                              style={{
+                                color: m.hue,
+                                fontVariantNumeric: "tabular-nums",
+                                fontSize: 11,
+                                fontWeight: 500,
+                                minWidth: 30,
+                                textAlign: "right",
+                              }}
+                            >
+                              {m.avg !== null ? m.avg.toFixed(2) : "—"}
+                            </span>
+                          </div>
+                          <div
+                            style={{
+                              height: 3,
+                              background: "rgba(255,255,255,0.05)",
+                              borderRadius: 99,
+                              overflow: "hidden",
+                            }}
+                          >
+                            <div
+                              style={{
+                                width: `${pct}%`,
+                                height: "100%",
+                                background: m.hue,
+                                opacity: m.count > 0 ? 1 : 0,
+                              }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* Activity */}
             <div className="fa-card">
               <div className="fa-card-inner" style={{ padding: 18 }}>
@@ -439,7 +549,7 @@ export function Dashboard({ stats, myEmail }: Props) {
           </div>
 
           {/* Ideas table */}
-          <div style={{ flex: 1, overflow: "auto", padding: "2px 24px 28px" }}>
+          <div style={{ padding: "2px 24px 28px" }}>
             {filtered.length === 0 ? (
               <EmptyState />
             ) : (
