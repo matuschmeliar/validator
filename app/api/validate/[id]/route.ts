@@ -2,20 +2,27 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { supabaseAdmin } from "@/lib/db";
 import { requireUserEmail } from "@/lib/auth";
-import { validateIdea, DEFAULT_MODEL, DEEP_MODEL } from "@/lib/anthropic";
+import {
+  validateIdea,
+  validateIdeaYC,
+  DEFAULT_MODEL,
+  DEEP_MODEL,
+} from "@/lib/anthropic";
 import { weightedScore } from "@/lib/rubric";
+import { ycWeightedScore } from "@/lib/yc-rubric";
 import { errorResponse } from "@/lib/api-error";
 
 const Body = z.object({
   deep: z.boolean().optional(),
+  rubric: z.enum(["manifest", "yc"]).optional().default("manifest"),
 });
 
-export const maxDuration = 60; // Vercel: allow 60s for Claude call
+export const maxDuration = 60;
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const email = await requireUserEmail();
-    const { deep } = Body.parse(await req.json().catch(() => ({})));
+    const { deep, rubric } = Body.parse(await req.json().catch(() => ({})));
 
     const db = supabaseAdmin();
     const { data: idea, error: getErr } = await db
@@ -41,7 +48,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     if (attErr) throw attErr;
     if (amErr) throw amErr;
 
-    const { json, model } = await validateIdea({
+    const ctx = {
       title: idea.title,
       horizont: idea.horizont,
       body_md: idea.body_md,
@@ -49,20 +56,50 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       amendments: amendments ?? [],
       attachments: attachments ?? [],
       model: deep ? DEEP_MODEL : DEFAULT_MODEL,
-    });
+    };
 
-    const score = weightedScore(json.scores);
+    let score: number;
+    let scores: Record<string, number>;
+    let summary_md: string;
+    let next_step: string;
+    let maslow_level: number;
+    let maslow_note: string;
+    let axis_notes: Record<string, string>;
+    let model: string;
+
+    if (rubric === "yc") {
+      const r = await validateIdeaYC(ctx);
+      scores = r.json.scores;
+      score = ycWeightedScore(r.json.scores);
+      summary_md = r.json.summary_md;
+      next_step = r.json.next_step;
+      maslow_level = r.json.maslow_level;
+      maslow_note = r.json.maslow_note;
+      axis_notes = r.json.axis_notes;
+      model = r.model;
+    } else {
+      const r = await validateIdea(ctx);
+      scores = r.json.scores;
+      score = weightedScore(r.json.scores);
+      summary_md = r.json.summary_md;
+      next_step = r.json.next_step;
+      maslow_level = r.json.maslow_level;
+      maslow_note = r.json.maslow_note;
+      axis_notes = r.json.axis_notes;
+      model = r.model;
+    }
 
     const { data: report, error: insErr } = await db
       .from("validation_reports")
       .insert({
         idea_id: params.id,
-        scores: json.scores,
+        scores,
         weighted_score: score,
-        summary_md: json.summary_md,
-        next_step: json.next_step,
-        maslow_level: json.maslow_level,
-        maslow_note: json.maslow_note,
+        summary_md,
+        next_step,
+        maslow_level,
+        maslow_note,
+        rubric_type: rubric,
         model,
         created_by_email: email,
       })
@@ -70,7 +107,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       .single();
     if (insErr) throw insErr;
 
-    return NextResponse.json({ report, axis_notes: json.axis_notes });
+    return NextResponse.json({ report, axis_notes });
   } catch (e) {
     return errorResponse(e);
   }

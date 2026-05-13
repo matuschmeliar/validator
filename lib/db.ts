@@ -52,15 +52,18 @@ export type Scores = {
   moat: number;
 };
 
+export type RubricType = "manifest" | "yc";
+
 export type ValidationReport = {
   id: string;
   idea_id: string;
-  scores: Scores;
+  scores: Record<string, number>;
   weighted_score: number;
   summary_md: string;
   next_step: string | null;
   maslow_level: MaslowLevel | null;
   maslow_note: string | null;
+  rubric_type: RubricType;
   model: string;
   created_by_email: string;
   created_at: string;
@@ -68,11 +71,12 @@ export type ValidationReport = {
 
 export type IdeaWithLatest = Idea & {
   latest_score: number | null;
-  latest_scores: Scores | null;
+  latest_scores: Record<string, number> | null;
   latest_summary_md: string | null;
   latest_next_step: string | null;
   latest_maslow_level: MaslowLevel | null;
   latest_maslow_note: string | null;
+  latest_rubric_type: RubricType | null;
   latest_validated_at: string | null;
   avg_stars: number | null;
   ratings_count: number;

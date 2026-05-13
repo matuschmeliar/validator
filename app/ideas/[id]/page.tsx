@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { supabaseAdmin, Idea, ValidationReport, IdeaAttachment, IdeaAmendment } from "@/lib/db";
+import { supabaseAdmin, Idea, ValidationReport, IdeaAttachment, IdeaAmendment, RubricType } from "@/lib/db";
 import { readSessionEmail } from "@/lib/auth";
 import { MarkdownView } from "@/components/MarkdownView";
 import { ScoreTable } from "@/components/ScoreTable";
@@ -128,7 +128,10 @@ export default async function IdeaDetail({ params }: { params: { id: string } })
               <div className="fa-card-inner" style={{ padding: 24 }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18, gap: 12 }}>
                   <div>
-                    <SectionLabel>Claude validácia</SectionLabel>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <SectionLabel>Claude validácia</SectionLabel>
+                      {latest && <RubricBadge rubric={latest.rubric_type ?? "manifest"} />}
+                    </div>
                     {latest && (
                       <div style={{ marginTop: 8, fontSize: 11, color: "rgba(255,255,255,0.4)" }}>
                         {latest.model} · {new Date(latest.created_at).toLocaleString("sk-SK")} · {latest.created_by_email}
@@ -159,7 +162,7 @@ export default async function IdeaDetail({ params }: { params: { id: string } })
                       </span>
                       <span style={{ fontSize: 18, color: "rgba(255,255,255,0.35)" }}>/ 5</span>
                     </div>
-                    <ScoreTable scores={latest.scores} />
+                    <ScoreTable scores={latest.scores} rubric={latest.rubric_type ?? "manifest"} />
                     <MaslowView
                       authorLevel={idea.maslow_level}
                       claudeLevel={latest.maslow_level}
@@ -222,12 +225,15 @@ export default async function IdeaDetail({ params }: { params: { id: string } })
                             style={{
                               display: "flex",
                               justifyContent: "space-between",
+                              alignItems: "center",
                               fontSize: 11,
                               color: "rgba(255,255,255,0.4)",
                               marginBottom: 6,
+                              gap: 8,
                             }}
                           >
-                            <span>
+                            <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                              <RubricBadge rubric={r.rubric_type ?? "manifest"} />
                               {new Date(r.created_at).toLocaleString("sk-SK")} · {r.model}
                             </span>
                             <span className="fa-score-grad" style={{ fontSize: 14 }}>
@@ -297,5 +303,29 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
     >
       {children}
     </div>
+  );
+}
+
+function RubricBadge({ rubric }: { rubric: RubricType }) {
+  const isYC = rubric === "yc";
+  const hue = isYC ? "#F5B547" : "#FF6A7A";
+  const label = isYC ? "YC validácia" : "DIUS manifest";
+  return (
+    <span
+      style={{
+        fontSize: 10,
+        padding: "2px 8px",
+        borderRadius: 999,
+        background: `${hue}1f`,
+        border: `1px solid ${hue}55`,
+        color: hue,
+        fontWeight: 500,
+        textTransform: "none",
+        letterSpacing: "0",
+        whiteSpace: "nowrap",
+      }}
+    >
+      {label}
+    </span>
   );
 }

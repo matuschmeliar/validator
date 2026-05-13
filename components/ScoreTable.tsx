@@ -1,8 +1,22 @@
-import { AXIS_LABELS_SK, RUBRIC_WEIGHTS, AxisKey } from "@/lib/rubric";
-import type { Scores } from "@/lib/db";
+import { AXIS_LABELS_SK, RUBRIC_WEIGHTS } from "@/lib/rubric";
+import { YC_AXIS_LABELS_SK, YC_RUBRIC_WEIGHTS } from "@/lib/yc-rubric";
+import type { RubricType } from "@/lib/db";
 
-export function ScoreTable({ scores }: { scores: Scores | Record<string, number> }) {
-  const order: AxisKey[] = ["alignment", "tech", "ethics", "economy", "deps", "moat"];
+const MANIFEST_ORDER = ["alignment", "tech", "ethics", "economy", "deps", "moat"] as const;
+const YC_ORDER = ["demand", "specificity", "status_quo", "wedge", "observation", "future_fit"] as const;
+
+export function ScoreTable({
+  scores,
+  rubric = "manifest",
+}: {
+  scores: Record<string, number>;
+  rubric?: RubricType;
+}) {
+  const order: readonly string[] = rubric === "yc" ? YC_ORDER : MANIFEST_ORDER;
+  const labels: Record<string, string> = rubric === "yc" ? YC_AXIS_LABELS_SK : AXIS_LABELS_SK;
+  const weights: Record<string, number> =
+    rubric === "yc" ? YC_RUBRIC_WEIGHTS : RUBRIC_WEIGHTS;
+
   return (
     <table
       style={{
@@ -47,7 +61,7 @@ export function ScoreTable({ scores }: { scores: Scores | Record<string, number>
                 color: "rgba(255,255,255,0.85)",
               }}
             >
-              {AXIS_LABELS_SK[k]}
+              {labels[k]}
             </td>
             <td
               style={{
@@ -57,7 +71,7 @@ export function ScoreTable({ scores }: { scores: Scores | Record<string, number>
                 fontVariantNumeric: "tabular-nums",
               }}
             >
-              <Bar value={(scores as Record<string, number>)[k]} />
+              <Bar value={scores[k] ?? 0} />
             </td>
             <td
               style={{
@@ -68,7 +82,7 @@ export function ScoreTable({ scores }: { scores: Scores | Record<string, number>
                 fontVariantNumeric: "tabular-nums",
               }}
             >
-              {(RUBRIC_WEIGHTS[k] * 100).toFixed(0)} %
+              {(weights[k] * 100).toFixed(0)} %
             </td>
           </tr>
         ))}

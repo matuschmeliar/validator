@@ -6,6 +6,11 @@ import {
   MaslowLevel,
   MASLOW_LABELS_SK,
 } from "./rubric";
+import {
+  YC_SYSTEM_PROMPT,
+  YCValidationJson,
+  YCAxisKey,
+} from "./yc-rubric";
 import type { IdeaAttachment, IdeaAmendment } from "./db";
 import { attachmentsToContentBlocks } from "./attachments";
 
@@ -21,17 +26,18 @@ function client(): Anthropic {
 export const DEFAULT_MODEL = "claude-sonnet-4-6";
 export const DEEP_MODEL = "claude-opus-4-7";
 
-export async function validateIdea(opts: {
+type IdeaContext = {
   title: string;
   horizont: string | null;
   body_md: string;
   maslow_level: MaslowLevel | null;
   amendments?: IdeaAmendment[];
   attachments?: IdeaAttachment[];
-  model?: string;
-}): Promise<{ json: ValidationJson; model: string }> {
-  const model = opts.model ?? DEFAULT_MODEL;
+};
 
+async function buildUserContent(
+  opts: IdeaContext
+): Promise<Anthropic.ContentBlockParam[]> {
   const authorMaslow =
     opts.maslow_level != null
       ? `## Autorov Maslow odhad\n${opts.maslow_level} — ${MASLOW_LABELS_SK[opts.maslow_level]}`
@@ -75,6 +81,30 @@ export async function validateIdea(opts: {
     userContent.push(...attBlocks);
   }
 
+  return userContent;
+}
+
+function stripFences(text: string): string {
+  return text
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/```\s*$/i, "")
+    .trim();
+}
+
+function extractText(res: Anthropic.Message): string {
+  return res.content
+    .filter((b): b is Anthropic.TextBlock => b.type === "text")
+    .map((b) => b.text)
+    .join("\n")
+    .trim();
+}
+
+export async function validateIdea(
+  opts: IdeaContext & { model?: string }
+): Promise<{ json: ValidationJson; model: string }> {
+  const model = opts.model ?? DEFAULT_MODEL;
+  const userContent = await buildUserContent(opts);
+
   const res = await client().messages.create({
     model,
     max_tokens: 2000,
@@ -82,30 +112,41 @@ export async function validateIdea(opts: {
       {
         type: "text",
         text: SYSTEM_PROMPT,
-        // Cache the rubric — it's identical for every call
         cache_control: { type: "ephemeral" },
       },
     ],
     messages: [{ role: "user", content: userContent }],
   });
 
-  const text = res.content
-    .filter((b): b is Anthropic.TextBlock => b.type === "text")
-    .map((b) => b.text)
-    .join("\n")
-    .trim();
+  const json = parseValidationJson(extractText(res));
+  return { json, model };
+}
 
-  const json = parseValidationJson(text);
+export async function validateIdeaYC(
+  opts: IdeaContext & { model?: string }
+): Promise<{ json: YCValidationJson; model: string }> {
+  const model = opts.model ?? DEFAULT_MODEL;
+  const userContent = await buildUserContent(opts);
+
+  const res = await client().messages.create({
+    model,
+    max_tokens: 2000,
+    system: [
+      {
+        type: "text",
+        text: YC_SYSTEM_PROMPT,
+        cache_control: { type: "ephemeral" },
+      },
+    ],
+    messages: [{ role: "user", content: userContent }],
+  });
+
+  const json = parseYCValidationJson(extractText(res));
   return { json, model };
 }
 
 function parseValidationJson(text: string): ValidationJson {
-  // Strip ```json fences if model still wraps despite instruction
-  const cleaned = text
-    .replace(/^```(?:json)?\s*/i, "")
-    .replace(/```\s*$/i, "")
-    .trim();
-  const parsed = JSON.parse(cleaned);
+  const parsed = JSON.parse(stripFences(text));
 
   const axes: AxisKey[] = ["alignment", "tech", "ethics", "economy", "deps", "moat"];
   for (const a of axes) {
@@ -125,4 +166,34 @@ function parseValidationJson(text: string): ValidationJson {
     parsed.maslow_note = "";
   }
   return parsed as ValidationJson;
+}
+
+function parseYCValidationJson(text: string): YCValidationJson {
+  const parsed = JSON.parse(stripFences(text));
+
+  const axes: YCAxisKey[] = [
+    "demand",
+    "specificity",
+    "status_quo",
+    "wedge",
+    "observation",
+    "future_fit",
+  ];
+  for (const a of axes) {
+    const s = parsed.scores?.[a];
+    if (typeof s !== "number" || s < 1 || s > 5) {
+      throw new Error(`Invalid YC score for axis "${a}": ${s}`);
+    }
+  }
+  if (typeof parsed.summary_md !== "string" || !parsed.summary_md.trim()) {
+    throw new Error("Missing summary_md");
+  }
+  const ml = parsed.maslow_level;
+  if (typeof ml !== "number" || ml < 1 || ml > 5 || !Number.isInteger(ml)) {
+    throw new Error(`Invalid maslow_level: ${ml}`);
+  }
+  if (typeof parsed.maslow_note !== "string") {
+    parsed.maslow_note = "";
+  }
+  return parsed as YCValidationJson;
 }
