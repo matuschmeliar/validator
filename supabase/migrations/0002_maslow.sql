@@ -2,14 +2,20 @@
 -- 1=Physiological, 2=Safety, 3=Belonging, 4=Esteem, 5=Self-actualization
 
 alter table ideas
-  add column maslow_level smallint check (maslow_level between 1 and 5);
+  add column if not exists maslow_level smallint check (maslow_level between 1 and 5);
 
 alter table validation_reports
-  add column maslow_level smallint check (maslow_level between 1 and 5),
-  add column maslow_note text;
+  add column if not exists maslow_level smallint check (maslow_level between 1 and 5);
 
--- Recreate view to expose Maslow fields
-create or replace view ideas_with_latest_report as
+alter table validation_reports
+  add column if not exists maslow_note text;
+
+-- Recreate view to expose Maslow fields.
+-- DROP first because i.* now includes a new ideas.maslow_level column,
+-- which shifts the existing latest_* columns and CREATE OR REPLACE forbids that.
+drop view if exists ideas_with_latest_report;
+
+create view ideas_with_latest_report as
 select
   i.*,
   r.weighted_score    as latest_score,
