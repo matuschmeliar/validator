@@ -12,7 +12,6 @@ const ALLOWED_EXT = ".pdf,.docx,.xlsx,.png,.jpg,.jpeg";
 export default function NewIdeaPage() {
   const router = useRouter();
   const [title, setTitle] = useState("");
-  const [smer, setSmer] = useState<"A" | "B" | "C" | "">("");
   const [horizont, setHorizont] = useState("");
   const [tags, setTags] = useState("");
   const [bodyMd, setBodyMd] = useState("");
@@ -45,7 +44,6 @@ export default function NewIdeaPage() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           title,
-          smer: smer || null,
           horizont: horizont || null,
           tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
           body_md: bodyMd,
@@ -120,28 +118,14 @@ export default function NewIdeaPage() {
               />
             </Field>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-              <Field label="Smer">
-                <select
-                  value={smer}
-                  onChange={(e) => setSmer(e.target.value as "A" | "B" | "C" | "")}
-                  className="fa-input"
-                >
-                  <option value="">—</option>
-                  <option value="A">A — Využitie dát</option>
-                  <option value="B">B</option>
-                  <option value="C">C</option>
-                </select>
-              </Field>
-              <Field label="Horizont">
-                <input
-                  value={horizont}
-                  onChange={(e) => setHorizont(e.target.value)}
-                  className="fa-input"
-                  placeholder="napr. 2026, 2-5 rokov, sci-fi"
-                />
-              </Field>
-            </div>
+            <Field label="Horizont">
+              <input
+                value={horizont}
+                onChange={(e) => setHorizont(e.target.value)}
+                className="fa-input"
+                placeholder="napr. 2026, 2-5 rokov, sci-fi"
+              />
+            </Field>
 
             <Field label="Tagy (čiarkami oddelené)">
               <input

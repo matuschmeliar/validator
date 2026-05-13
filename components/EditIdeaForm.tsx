@@ -9,7 +9,6 @@ import { MaslowPicker } from "@/components/MaslowPicker";
 export function EditIdeaForm({ idea }: { idea: Idea }) {
   const router = useRouter();
   const [title, setTitle] = useState(idea.title);
-  const [smer, setSmer] = useState<"A" | "B" | "C" | "">(idea.smer ?? "");
   const [horizont, setHorizont] = useState(idea.horizont ?? "");
   const [tags, setTags] = useState(idea.tags?.join(", ") ?? "");
   const [bodyMd, setBodyMd] = useState(idea.body_md);
@@ -27,7 +26,6 @@ export function EditIdeaForm({ idea }: { idea: Idea }) {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           title,
-          smer: smer || null,
           horizont: horizont || null,
           tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
           body_md: bodyMd,
@@ -65,23 +63,9 @@ export function EditIdeaForm({ idea }: { idea: Idea }) {
       <Field label="Názov">
         <input value={title} onChange={(e) => setTitle(e.target.value)} className="fa-input" />
       </Field>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-        <Field label="Smer">
-          <select
-            value={smer}
-            onChange={(e) => setSmer(e.target.value as "A" | "B" | "C" | "")}
-            className="fa-input"
-          >
-            <option value="">—</option>
-            <option value="A">A</option>
-            <option value="B">B</option>
-            <option value="C">C</option>
-          </select>
-        </Field>
-        <Field label="Horizont">
-          <input value={horizont} onChange={(e) => setHorizont(e.target.value)} className="fa-input" />
-        </Field>
-      </div>
+      <Field label="Horizont">
+        <input value={horizont} onChange={(e) => setHorizont(e.target.value)} className="fa-input" />
+      </Field>
       <Field label="Tagy (čiarkami)">
         <input value={tags} onChange={(e) => setTags(e.target.value)} className="fa-input" />
       </Field>

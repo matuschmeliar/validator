@@ -12,12 +12,6 @@ import { AttachmentManager } from "@/components/AttachmentManager";
 
 export const dynamic = "force-dynamic";
 
-const SMER_HUE: Record<string, string> = {
-  A: "#FF6A7A",
-  B: "#5A8AE6",
-  C: "#A0C8FF",
-};
-
 export default async function IdeaDetail({ params }: { params: { id: string } }) {
   const db = supabaseAdmin();
   const myEmail = (await readSessionEmail()) ?? "";
@@ -52,7 +46,6 @@ export default async function IdeaDetail({ params }: { params: { id: string } })
     ratings.length > 0 ? ratings.reduce((a, r) => a + r.stars, 0) / ratings.length : null;
 
   const isAuthor = idea.author_email === myEmail;
-  const hue = SMER_HUE[idea.smer ?? ""] ?? "#71717A";
 
   return (
     <div className="fa-stage">
@@ -65,23 +58,7 @@ export default async function IdeaDetail({ params }: { params: { id: string } })
 
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginTop: 16, gap: 24 }}>
             <div style={{ minWidth: 0, flex: 1 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-                {idea.smer && (
-                  <span
-                    className="fa-icon-tile"
-                    style={{
-                      width: 28,
-                      height: 28,
-                      fontSize: 11,
-                      fontWeight: 700,
-                      background: `linear-gradient(180deg, ${hue}26 0%, ${hue}0d 100%)`,
-                      borderColor: `${hue}33`,
-                      color: hue,
-                    }}
-                  >
-                    {idea.smer}
-                  </span>
-                )}
+              <div style={{ marginBottom: 10 }}>
                 <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>
                   {idea.horizont && <>Horizont: {idea.horizont} · </>}autor: {idea.author_email}
                 </span>

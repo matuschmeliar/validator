@@ -6,7 +6,6 @@ import { errorResponse } from "@/lib/api-error";
 
 const CreateIdea = z.object({
   title: z.string().min(3).max(200),
-  smer: z.enum(["A", "B", "C"]).nullable(),
   horizont: z.string().max(50).nullable(),
   tags: z.array(z.string()).max(20).default([]),
   body_md: z.string().min(10).max(50000),
@@ -17,11 +16,9 @@ export async function GET(req: NextRequest) {
   try {
     await requireUserEmail();
     const { searchParams } = new URL(req.url);
-    const smer = searchParams.get("smer");
     const sort = searchParams.get("sort") ?? "created"; // created | score | stars
 
     let q = supabaseAdmin().from("ideas_with_latest_report").select("*");
-    if (smer && ["A", "B", "C"].includes(smer)) q = q.eq("smer", smer);
 
     if (sort === "score") {
       q = q.order("latest_score", { ascending: false, nullsFirst: false });
@@ -48,7 +45,6 @@ export async function POST(req: NextRequest) {
       .from("ideas")
       .insert({
         title: body.title,
-        smer: body.smer,
         horizont: body.horizont,
         tags: body.tags,
         body_md: body.body_md,

@@ -11,7 +11,6 @@ export function IdeaCard({ idea }: { idea: IdeaWithLatest }) {
           <div className="min-w-0">
             <h3 className="font-medium truncate">{idea.title}</h3>
             <p className="text-xs text-[var(--muted)] mt-1 flex flex-wrap gap-x-3 items-center">
-              {idea.smer && <span>Smer {idea.smer}</span>}
               {idea.horizont && <span>{idea.horizont}</span>}
               {maslow != null && (
                 <span

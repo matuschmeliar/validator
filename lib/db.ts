@@ -34,7 +34,6 @@ export function supabaseAdmin(): SupabaseClient {
 export type Idea = {
   id: string;
   title: string;
-  smer: "A" | "B" | "C" | null;
   horizont: string | null;
   tags: string[];
   body_md: string;

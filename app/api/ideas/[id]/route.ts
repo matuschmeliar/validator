@@ -6,7 +6,6 @@ import { errorResponse } from "@/lib/api-error";
 
 const UpdateIdea = z.object({
   title: z.string().min(3).max(200).optional(),
-  smer: z.enum(["A", "B", "C"]).nullable().optional(),
   horizont: z.string().max(50).nullable().optional(),
   tags: z.array(z.string()).max(20).optional(),
   body_md: z.string().min(10).max(50000).optional(),

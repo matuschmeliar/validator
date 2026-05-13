@@ -23,7 +23,6 @@ export const DEEP_MODEL = "claude-opus-4-7";
 
 export async function validateIdea(opts: {
   title: string;
-  smer: string | null;
   horizont: string | null;
   body_md: string;
   maslow_level: MaslowLevel | null;
@@ -39,7 +38,6 @@ export async function validateIdea(opts: {
 
   const headerText = [
     `# Idea: ${opts.title}`,
-    opts.smer ? `**Smer:** ${opts.smer}` : null,
     opts.horizont ? `**Horizont:** ${opts.horizont}` : null,
     "",
     "## Telo",

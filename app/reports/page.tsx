@@ -3,16 +3,10 @@ import { supabaseAdmin } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
-const SMER_HUE: Record<string, string> = {
-  A: "#FF6A7A",
-  B: "#5A8AE6",
-  C: "#A0C8FF",
-};
-
 export default async function ReportsPage() {
   const { data } = await supabaseAdmin()
     .from("ideas_with_latest_report")
-    .select("id, title, smer, horizont, latest_score, latest_next_step, latest_validated_at, author_email")
+    .select("id, title, horizont, latest_score, latest_next_step, latest_validated_at, author_email")
     .order("latest_score", { ascending: false, nullsFirst: false });
 
   const rows = data ?? [];
@@ -58,7 +52,7 @@ export default async function ReportsPage() {
                 <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: 0, fontSize: 13 }}>
                   <thead>
                     <tr>
-                      {["#", "Idea", "Smer", "Autor", "Skóre", "Posledná"].map((h) => (
+                      {["#", "Idea", "Autor", "Skóre", "Posledná"].map((h) => (
                         <th
                           key={h}
                           style={{
@@ -78,7 +72,6 @@ export default async function ReportsPage() {
                   </thead>
                   <tbody>
                     {validated.map((r, idx) => {
-                      const hue = SMER_HUE[r.smer ?? ""] ?? "#71717A";
                       return (
                         <tr key={r.id} className="fa-row" style={{ cursor: "pointer" }}>
                           <td
@@ -107,26 +100,6 @@ export default async function ReportsPage() {
                               <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 2 }}>
                                 Horizont: {r.horizont}
                               </div>
-                            )}
-                          </td>
-                          <td style={{ padding: "13px 16px", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-                            {r.smer ? (
-                              <span
-                                className="fa-icon-tile"
-                                style={{
-                                  width: 24,
-                                  height: 24,
-                                  fontSize: 10,
-                                  fontWeight: 700,
-                                  background: `linear-gradient(180deg, ${hue}26 0%, ${hue}0d 100%)`,
-                                  borderColor: `${hue}33`,
-                                  color: hue,
-                                }}
-                              >
-                                {r.smer}
-                              </span>
-                            ) : (
-                              <span style={{ color: "rgba(255,255,255,0.3)" }}>—</span>
                             )}
                           </td>
                           <td

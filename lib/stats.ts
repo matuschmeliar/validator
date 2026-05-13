@@ -1,7 +1,5 @@
 import { supabaseAdmin, IdeaWithLatest } from "./db";
 
-export type SmerKey = "A" | "B" | "C" | "unset";
-
 export type DashboardStats = {
   ideas: IdeaWithLatest[];
   total: number;
@@ -9,18 +7,10 @@ export type DashboardStats = {
   unvalidatedCount: number;
   avgScore: number | null;
   avgStars: number | null;
-  bySmer: Array<{ id: SmerKey; name: string; hue: string; count: number; avg: number | null }>;
   weeklyActivity: number[]; // last 8 weeks (oldest -> newest)
   weeklyValidations: number[]; // last 8 weeks
   top5: IdeaWithLatest[];
   uniqueAuthors: string[];
-};
-
-const SMER_META: Record<SmerKey, { name: string; hue: string }> = {
-  A: { name: "Smer A — Využitie dát", hue: "#FF6A7A" },
-  B: { name: "Smer B", hue: "#5A8AE6" },
-  C: { name: "Smer C", hue: "#A0C8FF" },
-  unset: { name: "Bez smeru", hue: "#71717A" },
 };
 
 export async function loadDashboardStats(): Promise<DashboardStats> {
@@ -49,26 +39,6 @@ export async function loadDashboardStats(): Promise<DashboardStats> {
       ? ratedIdeas.reduce((a, i) => a + (i.avg_stars ?? 0), 0) / ratedIdeas.length
       : null;
 
-  const bySmer: DashboardStats["bySmer"] = (["A", "B", "C", "unset"] as SmerKey[])
-    .map((id) => {
-      const items = ideas.filter((i) =>
-        id === "unset" ? i.smer === null : i.smer === id
-      );
-      const withScore = items.filter((i) => i.latest_score !== null);
-      const avg =
-        withScore.length > 0
-          ? withScore.reduce((a, i) => a + (i.latest_score ?? 0), 0) / withScore.length
-          : null;
-      return {
-        id,
-        name: SMER_META[id].name,
-        hue: SMER_META[id].hue,
-        count: items.length,
-        avg: avg !== null ? Math.round(avg * 100) / 100 : null,
-      };
-    })
-    .filter((s) => s.count > 0);
-
   const WEEKS = 8;
   const now = new Date();
   const weekStarts = Array.from({ length: WEEKS }, (_, i) => {
@@ -77,7 +47,7 @@ export async function loadDashboardStats(): Promise<DashboardStats> {
     d.setHours(0, 0, 0, 0);
     return d.getTime();
   });
-  function bucket(ts: number, source: string[]): number[] {
+  function bucket(source: string[]): number[] {
     const buckets = new Array(WEEKS).fill(0);
     for (const iso of source) {
       const t = new Date(iso).getTime();
@@ -90,8 +60,8 @@ export async function loadDashboardStats(): Promise<DashboardStats> {
     }
     return buckets;
   }
-  const weeklyActivity = bucket(0, ideas.map((i) => i.created_at));
-  const weeklyValidations = bucket(0, reports.map((r) => r.created_at));
+  const weeklyActivity = bucket(ideas.map((i) => i.created_at));
+  const weeklyValidations = bucket(reports.map((r) => r.created_at));
 
   const top5 = [...validated]
     .sort((a, b) => (b.latest_score ?? 0) - (a.latest_score ?? 0))
@@ -106,7 +76,6 @@ export async function loadDashboardStats(): Promise<DashboardStats> {
     unvalidatedCount: ideas.length - validated.length,
     avgScore: avgScore !== null ? Math.round(avgScore * 100) / 100 : null,
     avgStars: avgStars !== null ? Math.round(avgStars * 10) / 10 : null,
-    bySmer,
     weeklyActivity,
     weeklyValidations,
     top5,

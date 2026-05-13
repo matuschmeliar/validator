@@ -34,7 +34,6 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
     const { json, model } = await validateIdea({
       title: idea.title,
-      smer: idea.smer,
       horizont: idea.horizont,
       body_md: idea.body_md,
       maslow_level: idea.maslow_level,

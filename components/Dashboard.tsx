@@ -7,13 +7,6 @@ import type { DashboardStats } from "@/lib/stats";
 import type { IdeaWithLatest } from "@/lib/db";
 import { MASLOW_LABELS_SK, MASLOW_HUE } from "@/lib/rubric";
 
-const SMER_HUE: Record<string, string> = {
-  A: "#FF6A7A",
-  B: "#5A8AE6",
-  C: "#A0C8FF",
-  unset: "#71717A",
-};
-
 const ACCENT = "#FF4D5E";
 const ACCENT_PINK = "#FF8A95";
 const BLUE = "#5A8AE6";
@@ -26,18 +19,15 @@ type Props = {
 
 export function Dashboard({ stats, myEmail }: Props) {
   const router = useRouter();
-  const [smer, setSmer] = useState<"all" | "A" | "B" | "C" | "unset">("all");
   const [author, setAuthor] = useState<string>("all");
   const [scoreMin, setScoreMin] = useState(0);
   const [sort, setSort] = useState<"score" | "recent" | "stars">("score");
   const [search, setSearch] = useState("");
   const [activeNav, setActiveNav] = useState<"overview" | "ideas" | "validated" | "unvalidated">("overview");
+  const isOverview = activeNav === "overview" || activeNav === "ideas";
 
   const filtered = useMemo(() => {
     let list = [...stats.ideas];
-    if (smer !== "all") {
-      list = list.filter((i) => (smer === "unset" ? i.smer === null : i.smer === smer));
-    }
     if (author !== "all") list = list.filter((i) => i.author_email === author);
     if (scoreMin > 0) list = list.filter((i) => (i.latest_score ?? 0) >= scoreMin);
     if (activeNav === "validated") list = list.filter((i) => i.latest_score !== null);
@@ -54,7 +44,7 @@ export function Dashboard({ stats, myEmail }: Props) {
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
     return list;
-  }, [stats.ideas, smer, author, scoreMin, sort, search, activeNav]);
+  }, [stats.ideas, author, scoreMin, sort, search, activeNav]);
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -65,7 +55,10 @@ export function Dashboard({ stats, myEmail }: Props) {
   return (
     <div className="fa-stage" style={{ color: "#fff" }}>
       <div className="fa-stage-top-light" />
-      <div className="fa-chrome" style={{ display: "grid", gridTemplateColumns: "260px 1fr" }}>
+      <div
+        className="fa-chrome"
+        style={{ display: "grid", gridTemplateColumns: "260px 1fr", alignItems: "start" }}
+      >
         {/* ── Sidebar ── */}
         <aside
           style={{
@@ -74,6 +67,10 @@ export function Dashboard({ stats, myEmail }: Props) {
             padding: "20px 16px",
             borderRight: "1px solid rgba(255,255,255,0.05)",
             background: "linear-gradient(180deg, rgba(8,8,10,0.6) 0%, rgba(4,4,6,0.6) 100%)",
+            position: "sticky",
+            top: 0,
+            height: "100vh",
+            overflowY: "auto",
           }}
         >
           {/* Brand */}
@@ -148,55 +145,6 @@ export function Dashboard({ stats, myEmail }: Props) {
             </Link>
           </nav>
 
-          {/* Smer shortcuts */}
-          <div className="fa-section-label">Filter podľa smeru</div>
-          <nav style={{ display: "flex", flexDirection: "column", gap: 2, marginBottom: 22 }}>
-            {stats.bySmer.map((s) => (
-              <button
-                key={s.id}
-                className="fa-nav-row"
-                style={{ padding: "6px 8px" }}
-                onClick={() => setSmer(s.id === "unset" ? "unset" : (s.id as "A" | "B" | "C"))}
-              >
-                <span
-                  style={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: 2,
-                    background: s.hue,
-                    flexShrink: 0,
-                    marginLeft: 4,
-                  }}
-                />
-                <span style={{ flex: 1, fontSize: 12, color: "rgba(255,255,255,0.7)" }}>{s.name}</span>
-                <span style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", fontVariantNumeric: "tabular-nums" }}>
-                  {s.count}
-                </span>
-              </button>
-            ))}
-          </nav>
-
-          {/* Co-pilot CTA */}
-          <div className="fa-card" style={{ marginTop: "auto" }}>
-            <div className="fa-card-inner" style={{ padding: 14 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
-                <SparkleIcon />
-                <span style={{ fontSize: 11, color: "#fff", fontWeight: 600, letterSpacing: "0.02em" }}>Co-pilot</span>
-              </div>
-              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", lineHeight: 1.45, marginBottom: 10 }}>
-                {stats.unvalidatedCount > 0
-                  ? `${stats.unvalidatedCount} ${pluralize(stats.unvalidatedCount, "idea", "idey", "ideí")} čaká na Claude validáciu.`
-                  : "Všetky idey sú validované. ✓"}
-              </div>
-              <Link
-                href={stats.unvalidatedCount > 0 ? "/?sort=date" : "/ideas/new"}
-                className="fa-pill primary"
-                style={{ width: "100%", justifyContent: "center", fontSize: 12, padding: "7px 10px" }}
-              >
-                {stats.unvalidatedCount > 0 ? "Pozri zoznam" : "Pridať novú"}
-              </Link>
-            </div>
-          </div>
         </aside>
 
         {/* ── Main ── */}
@@ -254,6 +202,8 @@ export function Dashboard({ stats, myEmail }: Props) {
             </div>
           </header>
 
+          {isOverview && (
+          <>
           {/* KPI strip */}
           <div
             style={{
@@ -323,84 +273,10 @@ export function Dashboard({ stats, myEmail }: Props) {
             style={{
               padding: "6px 24px 12px",
               display: "grid",
-              gridTemplateColumns: "1.1fr 1fr 1fr",
+              gridTemplateColumns: "1fr 1fr",
               gap: 12,
             }}
           >
-            {/* By smer donut */}
-            <div className="fa-card">
-              <div className="fa-card-inner" style={{ padding: 18 }}>
-                <SectionHeader label="Podľa smeru" sub="Distribúcia & priemerné skóre">
-                  <span className="fa-pill" style={{ padding: "3px 9px", fontSize: 10 }}>
-                    <span style={{ width: 5, height: 5, borderRadius: 999, background: GREEN }} />
-                    Live
-                  </span>
-                </SectionHeader>
-                <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-                  <CategoryDonut data={stats.bySmer} />
-                  <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 5, minWidth: 0 }}>
-                    {stats.bySmer.length === 0 ? (
-                      <span style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>Žiadne idey.</span>
-                    ) : (
-                      stats.bySmer.map((s) => (
-                        <div
-                          key={s.id}
-                          style={{
-                            display: "grid",
-                            gridTemplateColumns: "8px 1fr auto auto",
-                            alignItems: "center",
-                            gap: 8,
-                            fontSize: 11,
-                          }}
-                        >
-                          <span
-                            style={{
-                              width: 8,
-                              height: 8,
-                              borderRadius: 2,
-                              background: s.hue,
-                              flexShrink: 0,
-                            }}
-                          />
-                          <span
-                            style={{
-                              color: "rgba(255,255,255,0.75)",
-                              whiteSpace: "nowrap",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                            }}
-                          >
-                            {s.name}
-                          </span>
-                          <span
-                            style={{
-                              color: "rgba(255,255,255,0.35)",
-                              fontVariantNumeric: "tabular-nums",
-                              fontSize: 10,
-                            }}
-                          >
-                            {s.count}
-                          </span>
-                          <span
-                            style={{
-                              color: s.hue,
-                              fontVariantNumeric: "tabular-nums",
-                              fontSize: 11,
-                              fontWeight: 500,
-                              minWidth: 28,
-                              textAlign: "right",
-                            }}
-                          >
-                            {s.avg !== null ? s.avg.toFixed(2) : "—"}
-                          </span>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-
             {/* Activity */}
             <div className="fa-card">
               <div className="fa-card-inner" style={{ padding: 18 }}>
@@ -473,6 +349,8 @@ export function Dashboard({ stats, myEmail }: Props) {
               </div>
             </div>
           </div>
+          </>
+          )}
 
           {/* Filter rail */}
           <div
@@ -502,18 +380,6 @@ export function Dashboard({ stats, myEmail }: Props) {
               Filtre
             </div>
             <FilterChip
-              label="Smer"
-              value={smer === "all" ? "Všetky" : smer === "unset" ? "—" : `Smer ${smer}`}
-              options={[
-                ["all", "Všetky smery"],
-                ["A", "Smer A"],
-                ["B", "Smer B"],
-                ["C", "Smer C"],
-                ["unset", "Bez smeru"],
-              ]}
-              onChange={(v) => setSmer(v as typeof smer)}
-            />
-            <FilterChip
               label="Autor"
               value={author === "all" ? "Všetci" : author.split("@")[0]}
               options={[["all", "Všetci"], ...stats.uniqueAuthors.map((a): [string, string] => [a, a])]}
@@ -534,11 +400,10 @@ export function Dashboard({ stats, myEmail }: Props) {
                 {scoreMin.toFixed(1)}
               </span>
             </div>
-            {(smer !== "all" || author !== "all" || scoreMin > 0 || search) && (
+            {(author !== "all" || scoreMin > 0 || search) && (
               <button
                 className="fa-pill"
                 onClick={() => {
-                  setSmer("all");
                   setAuthor("all");
                   setScoreMin(0);
                   setSearch("");
@@ -581,7 +446,7 @@ export function Dashboard({ stats, myEmail }: Props) {
               <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: 0, fontSize: 13 }}>
                 <thead>
                   <tr>
-                    {["Idea", "Smer", "Autor", "Skóre", "★", "💬", "Aktualizované", ""].map((h, i) => (
+                    {["Idea", "Autor", "Skóre", "★", "💬", "Aktualizované", ""].map((h, i) => (
                       <th
                         key={i}
                         style={{
@@ -780,66 +645,6 @@ function KpiTile({
   );
 }
 
-function CategoryDonut({
-  data,
-}: {
-  data: Array<{ id: string; name: string; hue: string; count: number; avg: number | null }>;
-}) {
-  const total = data.reduce((a, b) => a + b.count, 0);
-  const size = 118;
-  const R = 50;
-  const stroke = 14;
-  const C = 2 * Math.PI * R;
-  let acc = 0;
-  return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ flexShrink: 0 }}>
-      <circle cx={size / 2} cy={size / 2} r={R} stroke="rgba(255,255,255,0.05)" strokeWidth={stroke} fill="none" />
-      {total > 0 &&
-        data.map((c) => {
-          const frac = c.count / total;
-          const len = C * frac;
-          const seg = (
-            <circle
-              key={c.id}
-              cx={size / 2}
-              cy={size / 2}
-              r={R}
-              stroke={c.hue}
-              strokeWidth={stroke}
-              fill="none"
-              strokeDasharray={`${len - 2} ${C - len + 2}`}
-              strokeDashoffset={-acc * C}
-              transform={`rotate(-90 ${size / 2} ${size / 2})`}
-            />
-          );
-          acc += frac;
-          return seg;
-        })}
-      <text
-        x="50%"
-        y="46%"
-        textAnchor="middle"
-        fontSize="22"
-        fontWeight="600"
-        fill="#fff"
-        style={{ letterSpacing: "-0.03em" }}
-      >
-        {total}
-      </text>
-      <text
-        x="50%"
-        y="60%"
-        textAnchor="middle"
-        fontSize="9"
-        fill="rgba(255,255,255,0.4)"
-        style={{ letterSpacing: "0.1em" }}
-      >
-        IDEÍ
-      </text>
-    </svg>
-  );
-}
-
 function ActivityChart({ data, approvals }: { data: number[]; approvals: number[] }) {
   const w = 360;
   const h = 88;
@@ -971,7 +776,6 @@ function FilterChip({
 }
 
 function IdeaRow({ idea }: { idea: IdeaWithLatest }) {
-  const hue = SMER_HUE[idea.smer ?? "unset"];
   const initial = (idea.author_email[0] ?? "?").toUpperCase();
   const pct = idea.latest_score !== null ? (idea.latest_score / 5) * 100 : 0;
   const maslow = idea.latest_maslow_level ?? idea.maslow_level;
@@ -1033,24 +837,6 @@ function IdeaRow({ idea }: { idea: IdeaWithLatest }) {
               M{maslow} · {MASLOW_LABELS_SK[maslow]}
             </span>
           )}
-        </div>
-      </td>
-      <td style={{ padding: "13px 12px", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span
-            className="fa-icon-tile"
-            style={{
-              width: 24,
-              height: 24,
-              fontSize: 10,
-              fontWeight: 700,
-              background: `linear-gradient(180deg, ${hue}26 0%, ${hue}0d 100%)`,
-              borderColor: `${hue}33`,
-              color: hue,
-            }}
-          >
-            {idea.smer ?? "—"}
-          </span>
         </div>
       </td>
       <td style={{ padding: "13px 12px", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
