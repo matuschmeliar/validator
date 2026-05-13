@@ -6,7 +6,7 @@ import {
   MaslowLevel,
   MASLOW_LABELS_SK,
 } from "./rubric";
-import type { IdeaAttachment } from "./db";
+import type { IdeaAttachment, IdeaAmendment } from "./db";
 import { attachmentsToContentBlocks } from "./attachments";
 
 let _client: Anthropic | null = null;
@@ -26,6 +26,7 @@ export async function validateIdea(opts: {
   horizont: string | null;
   body_md: string;
   maslow_level: MaslowLevel | null;
+  amendments?: IdeaAmendment[];
   attachments?: IdeaAttachment[];
   model?: string;
 }): Promise<{ json: ValidationJson; model: string }> {
@@ -36,12 +37,25 @@ export async function validateIdea(opts: {
       ? `## Autorov Maslow odhad\n${opts.maslow_level} — ${MASLOW_LABELS_SK[opts.maslow_level]}`
       : null;
 
+  const amendmentsBlock =
+    opts.amendments && opts.amendments.length > 0
+      ? [
+          "",
+          "## Doplnenia (chronologicky, najnovšie posledné)",
+          ...opts.amendments.map((a) => {
+            const ts = new Date(a.created_at).toLocaleString("sk-SK");
+            return `### ${ts} — ${a.author_email}\n${a.body_md}`;
+          }),
+        ].join("\n")
+      : null;
+
   const headerText = [
     `# Idea: ${opts.title}`,
     opts.horizont ? `**Horizont:** ${opts.horizont}` : null,
     "",
     "## Telo",
     opts.body_md,
+    amendmentsBlock,
     authorMaslow ? "" : null,
     authorMaslow,
   ]

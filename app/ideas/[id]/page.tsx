@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { supabaseAdmin, Idea, ValidationReport, IdeaAttachment } from "@/lib/db";
+import { supabaseAdmin, Idea, ValidationReport, IdeaAttachment, IdeaAmendment } from "@/lib/db";
 import { readSessionEmail } from "@/lib/auth";
 import { MarkdownView } from "@/components/MarkdownView";
 import { ScoreTable } from "@/components/ScoreTable";
@@ -9,6 +9,7 @@ import { RatingStars } from "@/components/RatingStars";
 import { CommentList } from "@/components/CommentList";
 import { MaslowView } from "@/components/MaslowView";
 import { AttachmentManager } from "@/components/AttachmentManager";
+import { AmendmentList } from "@/components/AmendmentList";
 
 export const dynamic = "force-dynamic";
 
@@ -16,21 +17,27 @@ export default async function IdeaDetail({ params }: { params: { id: string } })
   const db = supabaseAdmin();
   const myEmail = (await readSessionEmail()) ?? "";
 
-  const [ideaRes, reportsRes, ratingsRes, commentsRes, attachmentsRes] = await Promise.all([
-    db.from("ideas").select("*").eq("id", params.id).single(),
-    db
-      .from("validation_reports")
-      .select("*")
-      .eq("idea_id", params.id)
-      .order("created_at", { ascending: false }),
-    db.from("ratings").select("*").eq("idea_id", params.id),
-    db.from("comments").select("*").eq("idea_id", params.id).order("created_at", { ascending: true }),
-    db
-      .from("idea_attachments")
-      .select("*")
-      .eq("idea_id", params.id)
-      .order("created_at", { ascending: true }),
-  ]);
+  const [ideaRes, reportsRes, ratingsRes, commentsRes, attachmentsRes, amendmentsRes] =
+    await Promise.all([
+      db.from("ideas").select("*").eq("id", params.id).single(),
+      db
+        .from("validation_reports")
+        .select("*")
+        .eq("idea_id", params.id)
+        .order("created_at", { ascending: false }),
+      db.from("ratings").select("*").eq("idea_id", params.id),
+      db.from("comments").select("*").eq("idea_id", params.id).order("created_at", { ascending: true }),
+      db
+        .from("idea_attachments")
+        .select("*")
+        .eq("idea_id", params.id)
+        .order("created_at", { ascending: true }),
+      db
+        .from("idea_amendments")
+        .select("*")
+        .eq("idea_id", params.id)
+        .order("created_at", { ascending: true }),
+    ]);
 
   if (ideaRes.error || !ideaRes.data) notFound();
 
@@ -39,6 +46,7 @@ export default async function IdeaDetail({ params }: { params: { id: string } })
   const ratings = ratingsRes.data ?? [];
   const comments = commentsRes.data ?? [];
   const attachments = (attachmentsRes.data ?? []) as IdeaAttachment[];
+  const amendments = (amendmentsRes.data ?? []) as IdeaAmendment[];
 
   const latest = reports[0] ?? null;
   const myRating = ratings.find((r) => r.author_email === myEmail)?.stars ?? null;
@@ -98,6 +106,19 @@ export default async function IdeaDetail({ params }: { params: { id: string } })
             <SectionLabel>Telo</SectionLabel>
             <div className="prose-sk" style={{ marginTop: 8 }}>
               <MarkdownView source={idea.body_md} />
+            </div>
+          </section>
+
+          {/* Amendments */}
+          <section style={{ marginTop: 32 }}>
+            <SectionLabel>Doplnenia ({amendments.length})</SectionLabel>
+            <div style={{ marginTop: 12 }}>
+              <AmendmentList
+                ideaId={idea.id}
+                initial={amendments}
+                myEmail={myEmail}
+                ideaAuthorEmail={idea.author_email}
+              />
             </div>
           </section>
 

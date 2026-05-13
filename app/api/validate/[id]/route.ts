@@ -25,18 +25,28 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       .single();
     if (getErr) throw getErr;
 
-    const { data: attachments, error: attErr } = await db
-      .from("idea_attachments")
-      .select("*")
-      .eq("idea_id", params.id)
-      .order("created_at", { ascending: true });
+    const [{ data: attachments, error: attErr }, { data: amendments, error: amErr }] =
+      await Promise.all([
+        db
+          .from("idea_attachments")
+          .select("*")
+          .eq("idea_id", params.id)
+          .order("created_at", { ascending: true }),
+        db
+          .from("idea_amendments")
+          .select("*")
+          .eq("idea_id", params.id)
+          .order("created_at", { ascending: true }),
+      ]);
     if (attErr) throw attErr;
+    if (amErr) throw amErr;
 
     const { json, model } = await validateIdea({
       title: idea.title,
       horizont: idea.horizont,
       body_md: idea.body_md,
       maslow_level: idea.maslow_level,
+      amendments: amendments ?? [],
       attachments: attachments ?? [],
       model: deep ? DEEP_MODEL : DEFAULT_MODEL,
     });

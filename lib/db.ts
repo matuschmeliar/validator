@@ -89,3 +89,11 @@ export type IdeaAttachment = {
   uploaded_by_email: string;
   created_at: string;
 };
+
+export type IdeaAmendment = {
+  id: string;
+  idea_id: string;
+  body_md: string;
+  author_email: string;
+  created_at: string;
+};
