@@ -117,9 +117,24 @@ Zaraď ideu do JEDNEJ z 5 úrovní Maslowovej hierarchie podľa toho, akú **naj
 
 Ak autor pri zadaní idey navrhol vlastnú úroveň, je uvedená v sekcii "## Autorov Maslow odhad" v užívateľskej správe. **Posudzuj nezávisle** — ak nesúhlasíš, zaraď do inej úrovne a v poli "maslow_note" stručne vysvetli prečo.
 
+## Verdict
+Po posúdení daj jednoznačný verdict:
+- **"go"** = pokračovať (4+ vážené skóre, žiadny fatálny red flag, jasná hodnota)
+- **"caution"** = ďalej premýšľať (zmiešané signály, treba doriešiť konkrétny problém)
+- **"no-go"** = neísť do tohto (fatálna chyba: etika 1, závislosť 1, alebo proti manifest)
+
+## Confidence
+Posúď, aký si si istý vlastným hodnotením, na základe detailnosti idey:
+- **"high"** = idea je dostatočne konkrétna (príklady, čísla, mená); minimálne hádanie
+- **"medium"** = niektoré osi máš ako informované hádanie kvôli chýbajúcim detailom
+- **"low"** = idea je príliš stručná, hodnotenie je z veľkej časti predpoklad
+
 ## Pravidlá
-- **Neuhládzaj.** Ak má idea fatálnu chybu (etika 1, závislosť 1), povedz to priamo.
-- **Cituj manifest.** Ak idea ide proti princípu Patrika, cituj ten princíp.
+- **Neuhládzaj.** Ak má idea fatálnu chybu (etika 1, závislosť 1), povedz to priamo a daj "no-go".
+- **Cituj manifest.** Ak idea ide proti princípu Patrika, cituj ten princíp v slabých stránkach.
+- **Konkrétne formulácie.** Strengths a weaknesses sú **krátke bullety** (1 veta každý), nie odsek. Žiadne "veľmi zaujímavá idea" — buď konkrétny.
+- **Red flags len ak vážne.** Prázdne pole je v poriadku; nezapĺňaj keď nie je čím.
+- **Critical question je JEDNA otázka**, ktorá rozhodne ďalší krok. Nie zoznam.
 - **Buď konkrétny v "ďalšom kroku".** Žiadne "treba viac premyslieť" — meno (rola), výstup, deadline.
 - **Slovenčina.** Anglické termíny len kde nemajú slovenský ekvivalent.
 
@@ -145,7 +160,13 @@ Vráť IBA validný JSON v tomto tvare (žiadny prose okolo, žiadne markdown co
   },
   "maslow_level": 1-5,
   "maslow_note": "1-2 vety: prečo táto úroveň, prípadne v čom sa rozchádzaš s autorom.",
-  "summary_md": "3-5 viet v slovenčine: silné stránky, slabé stránky, kritická otázka.",
+  "verdict": "go" | "caution" | "no-go",
+  "confidence": "high" | "medium" | "low",
+  "strengths": ["bullet 1 veta", "bullet 1 veta", ...],
+  "weaknesses": ["bullet 1 veta", "bullet 1 veta", ...],
+  "red_flags": ["len ak vážne, inak prázdny []"],
+  "critical_question": "JEDNA otázka ktorá rozhodne ďalší krok.",
+  "summary_md": "TLDR v 1-2 vetách. Žiadne enumerácie — to už pokrývajú strengths/weaknesses.",
   "next_step": "1 konkrétna akcia, kto/čo/dokedy."
 }`;
 
@@ -154,6 +175,12 @@ export type ValidationJson = {
   axis_notes: Record<AxisKey, string>;
   maslow_level: MaslowLevel;
   maslow_note: string;
+  verdict: "go" | "caution" | "no-go";
+  confidence: "high" | "medium" | "low";
+  strengths: string[];
+  weaknesses: string[];
+  red_flags: string[];
+  critical_question: string;
   summary_md: string;
   next_step: string;
 };

@@ -145,6 +145,30 @@ export async function validateIdeaYC(
   return { json, model };
 }
 
+function normalizeStructured(parsed: Record<string, unknown>): void {
+  // verdict / confidence — coerce to known values or null
+  const v = parsed.verdict;
+  if (v !== "go" && v !== "caution" && v !== "no-go") {
+    parsed.verdict = "caution";
+  }
+  const c = parsed.confidence;
+  if (c !== "high" && c !== "medium" && c !== "low") {
+    parsed.confidence = "medium";
+  }
+  // arrays
+  for (const key of ["strengths", "weaknesses", "red_flags"]) {
+    const val = parsed[key];
+    if (!Array.isArray(val)) {
+      parsed[key] = [];
+    } else {
+      parsed[key] = val.filter((x: unknown) => typeof x === "string" && x.trim());
+    }
+  }
+  if (typeof parsed.critical_question !== "string") {
+    parsed.critical_question = "";
+  }
+}
+
 function parseValidationJson(text: string): ValidationJson {
   const parsed = JSON.parse(stripFences(text));
 
@@ -165,6 +189,7 @@ function parseValidationJson(text: string): ValidationJson {
   if (typeof parsed.maslow_note !== "string") {
     parsed.maslow_note = "";
   }
+  normalizeStructured(parsed);
   return parsed as ValidationJson;
 }
 
@@ -195,5 +220,6 @@ function parseYCValidationJson(text: string): YCValidationJson {
   if (typeof parsed.maslow_note !== "string") {
     parsed.maslow_note = "";
   }
+  normalizeStructured(parsed);
   return parsed as YCValidationJson;
 }

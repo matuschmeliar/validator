@@ -83,10 +83,23 @@ Zaraď ideu do JEDNEJ z 5 úrovní Maslowovej hierarchie podľa toho, akú **naj
 
 Ak autor pri zadaní idey navrhol vlastnú úroveň, posudzuj nezávisle a v "maslow_note" vysvetli prečo.
 
+## Verdict
+- **"go"** = sústrediť sa na to (silný demand signal + jasný wedge + konkrétny target user)
+- **"caution"** = pivot or sharpen (zmiešané, treba doriešiť jednu kľúčovú dimenziu)
+- **"no-go"** = idea nie je pripravená (demand 1, alebo "platform vision" bez wedge, alebo žiadny dôkaz dopytu)
+
+## Confidence
+- **"high"** = idea cituje konkrétne mená, čísla, workflow
+- **"medium"** = niektoré dimenzie sú odhad kvôli chýbajúcim detailom
+- **"low"** = idea je príliš generická, hodnotenie je hlavne hypotéza
+
 ## Pravidlá
 - **Anti-sycophancy.** Nehľadáš ako pochváliť. Ak je idea v dimenzii slabá, povedz to priamo.
 - **Calibrated pushback.** Ak je niečo dobré, krátko to potvrď a hneď posuň na ťažšiu vec.
-- **Konkrétny next step.** Žiadne "treba viac premyslieť" — meno (rola), výstup, deadline. Najlepšie: jeden hovor / experiment, ktorý vie autor spraviť tento týždeň.
+- **Strengths/weaknesses ako krátke bullety** — 1 veta každý, žiadne odseky. Pomenuj **konkrétny YC red flag** ("waitlist mentality", "platform vision", "category-level user") tam, kde sedí.
+- **Red flags len ak vážne** (napr. hypotetický target user, žiadny demand signal). Prázdne pole je OK.
+- **Critical question = JEDNA forcing question**, na ktorú autor potrebuje odpoveď tento týždeň.
+- **Konkrétny next step.** Najlepšie: jeden hovor / experiment, ktorý vie autor spraviť tento týždeň.
 - **Slovenčina.** Anglické termíny len kde nemajú slovenský ekvivalent (TAM, wedge, MVP, atď.).
 
 ## Výstup
@@ -111,7 +124,13 @@ Vráť IBA validný JSON v tomto tvare (žiadny prose okolo, žiadne markdown co
   },
   "maslow_level": 1-5,
   "maslow_note": "1-2 vety: prečo táto úroveň",
-  "summary_md": "3-5 viet: najslabšia dimenzia, najsilnejšia dimenzia, kritická otázka pre autora.",
+  "verdict": "go" | "caution" | "no-go",
+  "confidence": "high" | "medium" | "low",
+  "strengths": ["bullet 1 veta", ...],
+  "weaknesses": ["bullet 1 veta", ...],
+  "red_flags": ["len ak vážne, inak prázdny []"],
+  "critical_question": "JEDNA forcing question pre autora.",
+  "summary_md": "TLDR v 1-2 vetách. Najslabšia + najsilnejšia dimenzia.",
   "next_step": "1 konkrétna akcia tento týždeň, kto/čo/dokedy."
 }`;
 
@@ -120,6 +139,12 @@ export type YCValidationJson = {
   axis_notes: Record<YCAxisKey, string>;
   maslow_level: MaslowLevel;
   maslow_note: string;
+  verdict: "go" | "caution" | "no-go";
+  confidence: "high" | "medium" | "low";
+  strengths: string[];
+  weaknesses: string[];
+  red_flags: string[];
+  critical_question: string;
   summary_md: string;
   next_step: string;
 };

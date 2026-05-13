@@ -58,50 +58,32 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       model: deep ? DEEP_MODEL : DEFAULT_MODEL,
     };
 
-    let score: number;
-    let scores: Record<string, number>;
-    let summary_md: string;
-    let next_step: string;
-    let maslow_level: number;
-    let maslow_note: string;
-    let axis_notes: Record<string, string>;
-    let model: string;
-
-    if (rubric === "yc") {
-      const r = await validateIdeaYC(ctx);
-      scores = r.json.scores;
-      score = ycWeightedScore(r.json.scores);
-      summary_md = r.json.summary_md;
-      next_step = r.json.next_step;
-      maslow_level = r.json.maslow_level;
-      maslow_note = r.json.maslow_note;
-      axis_notes = r.json.axis_notes;
-      model = r.model;
-    } else {
-      const r = await validateIdea(ctx);
-      scores = r.json.scores;
-      score = weightedScore(r.json.scores);
-      summary_md = r.json.summary_md;
-      next_step = r.json.next_step;
-      maslow_level = r.json.maslow_level;
-      maslow_note = r.json.maslow_note;
-      axis_notes = r.json.axis_notes;
-      model = r.model;
-    }
+    const r =
+      rubric === "yc" ? await validateIdeaYC(ctx) : await validateIdea(ctx);
+    const score =
+      rubric === "yc"
+        ? ycWeightedScore(r.json.scores as Parameters<typeof ycWeightedScore>[0])
+        : weightedScore(r.json.scores as Parameters<typeof weightedScore>[0]);
 
     const { data: report, error: insErr } = await db
       .from("validation_reports")
       .insert({
         idea_id: params.id,
-        scores,
-        axis_notes,
+        scores: r.json.scores,
+        axis_notes: r.json.axis_notes,
         weighted_score: score,
-        summary_md,
-        next_step,
-        maslow_level,
-        maslow_note,
+        summary_md: r.json.summary_md,
+        next_step: r.json.next_step,
+        maslow_level: r.json.maslow_level,
+        maslow_note: r.json.maslow_note,
         rubric_type: rubric,
-        model,
+        verdict: r.json.verdict,
+        confidence: r.json.confidence,
+        strengths: r.json.strengths,
+        weaknesses: r.json.weaknesses,
+        red_flags: r.json.red_flags,
+        critical_question: r.json.critical_question,
+        model: r.model,
         created_by_email: email,
       })
       .select()

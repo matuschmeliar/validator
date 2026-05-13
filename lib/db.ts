@@ -53,6 +53,8 @@ export type Scores = {
 };
 
 export type RubricType = "manifest" | "yc";
+export type Verdict = "go" | "caution" | "no-go";
+export type Confidence = "high" | "medium" | "low";
 
 export type ValidationReport = {
   id: string;
@@ -65,6 +67,12 @@ export type ValidationReport = {
   maslow_level: MaslowLevel | null;
   maslow_note: string | null;
   rubric_type: RubricType;
+  verdict: Verdict | null;
+  confidence: Confidence | null;
+  strengths: string[] | null;
+  weaknesses: string[] | null;
+  red_flags: string[] | null;
+  critical_question: string | null;
   model: string;
   created_by_email: string;
   created_at: string;
