@@ -1,5 +1,11 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { SYSTEM_PROMPT, ValidationJson, AxisKey } from "./rubric";
+import {
+  SYSTEM_PROMPT,
+  ValidationJson,
+  AxisKey,
+  MaslowLevel,
+  MASLOW_LABELS_SK,
+} from "./rubric";
 
 let _client: Anthropic | null = null;
 function client(): Anthropic {
@@ -18,9 +24,15 @@ export async function validateIdea(opts: {
   smer: string | null;
   horizont: string | null;
   body_md: string;
+  maslow_level: MaslowLevel | null;
   model?: string;
 }): Promise<{ json: ValidationJson; model: string }> {
   const model = opts.model ?? DEFAULT_MODEL;
+
+  const authorMaslow =
+    opts.maslow_level != null
+      ? `## Autorov Maslow odhad\n${opts.maslow_level} — ${MASLOW_LABELS_SK[opts.maslow_level]}`
+      : null;
 
   const userMessage = [
     `# Idea: ${opts.title}`,
@@ -29,8 +41,10 @@ export async function validateIdea(opts: {
     "",
     "## Telo",
     opts.body_md,
+    authorMaslow ? "" : null,
+    authorMaslow,
   ]
-    .filter(Boolean)
+    .filter((x) => x !== null)
     .join("\n");
 
   const res = await client().messages.create({
@@ -74,6 +88,13 @@ function parseValidationJson(text: string): ValidationJson {
   }
   if (typeof parsed.summary_md !== "string" || !parsed.summary_md.trim()) {
     throw new Error("Missing summary_md");
+  }
+  const ml = parsed.maslow_level;
+  if (typeof ml !== "number" || ml < 1 || ml > 5 || !Number.isInteger(ml)) {
+    throw new Error(`Invalid maslow_level: ${ml}`);
+  }
+  if (typeof parsed.maslow_note !== "string") {
+    parsed.maslow_note = "";
   }
   return parsed as ValidationJson;
 }

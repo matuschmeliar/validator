@@ -30,6 +30,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       smer: idea.smer,
       horizont: idea.horizont,
       body_md: idea.body_md,
+      maslow_level: idea.maslow_level,
       model: deep ? DEEP_MODEL : DEFAULT_MODEL,
     });
 
@@ -43,6 +44,8 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
         weighted_score: score,
         summary_md: json.summary_md,
         next_step: json.next_step,
+        maslow_level: json.maslow_level,
+        maslow_note: json.maslow_note,
         model,
         created_by_email: email,
       })

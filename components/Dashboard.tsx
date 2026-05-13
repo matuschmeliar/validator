@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { DashboardStats } from "@/lib/stats";
 import type { IdeaWithLatest } from "@/lib/db";
+import { MASLOW_LABELS_SK, MASLOW_HUE } from "@/lib/rubric";
 
 const SMER_HUE: Record<string, string> = {
   A: "#FF6A7A",
@@ -973,6 +974,7 @@ function IdeaRow({ idea }: { idea: IdeaWithLatest }) {
   const hue = SMER_HUE[idea.smer ?? "unset"];
   const initial = (idea.author_email[0] ?? "?").toUpperCase();
   const pct = idea.latest_score !== null ? (idea.latest_score / 5) * 100 : 0;
+  const maslow = idea.latest_maslow_level ?? idea.maslow_level;
   return (
     <tr
       onClick={() => {
@@ -1000,11 +1002,38 @@ function IdeaRow({ idea }: { idea: IdeaWithLatest }) {
         >
           {idea.title}
         </div>
-        {idea.horizont && (
-          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", marginTop: 3 }}>
-            Horizont: {idea.horizont}
-          </div>
-        )}
+        <div
+          style={{
+            display: "flex",
+            gap: 6,
+            marginTop: 3,
+            alignItems: "center",
+            flexWrap: "wrap",
+          }}
+        >
+          {idea.horizont && (
+            <span style={{ fontSize: 11, color: "rgba(255,255,255,0.45)" }}>
+              Horizont: {idea.horizont}
+            </span>
+          )}
+          {maslow != null && (
+            <span
+              style={{
+                fontSize: 10,
+                padding: "1px 7px",
+                borderRadius: 999,
+                background: `${MASLOW_HUE[maslow]}1f`,
+                border: `1px solid ${MASLOW_HUE[maslow]}55`,
+                color: MASLOW_HUE[maslow],
+                fontWeight: 500,
+                whiteSpace: "nowrap",
+              }}
+              title={`Maslow ${maslow} — ${MASLOW_LABELS_SK[maslow]}`}
+            >
+              M{maslow} · {MASLOW_LABELS_SK[maslow]}
+            </span>
+          )}
+        </div>
       </td>
       <td style={{ padding: "13px 12px", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>

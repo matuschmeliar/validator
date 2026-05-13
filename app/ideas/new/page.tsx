@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { MaslowLevel } from "@/lib/rubric";
+import { MaslowPicker } from "@/components/MaslowPicker";
 
 export default function NewIdeaPage() {
   const router = useRouter();
@@ -11,6 +13,7 @@ export default function NewIdeaPage() {
   const [horizont, setHorizont] = useState("");
   const [tags, setTags] = useState("");
   const [bodyMd, setBodyMd] = useState("");
+  const [maslowLevel, setMaslowLevel] = useState<MaslowLevel | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -28,6 +31,7 @@ export default function NewIdeaPage() {
           horizont: horizont || null,
           tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
           body_md: bodyMd,
+          maslow_level: maslowLevel,
         }),
       });
       if (!res.ok) {
@@ -111,6 +115,10 @@ export default function NewIdeaPage() {
                 className="fa-input"
                 placeholder="LLM, on-device, families"
               />
+            </Field>
+
+            <Field label="Maslowova úroveň (akú potrebu idea adresuje)">
+              <MaslowPicker value={maslowLevel} onChange={setMaslowLevel} />
             </Field>
 
             <Field label="Telo idey (markdown) *">

@@ -1,4 +1,5 @@
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import type { MaslowLevel } from "./rubric";
 
 // Lazy init — env vars may be absent at build-time; only required at runtime.
 let _publicClient: SupabaseClient | null = null;
@@ -38,6 +39,7 @@ export type Idea = {
   tags: string[];
   body_md: string;
   author_email: string;
+  maslow_level: MaslowLevel | null;
   created_at: string;
   updated_at: string;
 };
@@ -58,6 +60,8 @@ export type ValidationReport = {
   weighted_score: number;
   summary_md: string;
   next_step: string | null;
+  maslow_level: MaslowLevel | null;
+  maslow_note: string | null;
   model: string;
   created_by_email: string;
   created_at: string;
@@ -68,6 +72,8 @@ export type IdeaWithLatest = Idea & {
   latest_scores: Scores | null;
   latest_summary_md: string | null;
   latest_next_step: string | null;
+  latest_maslow_level: MaslowLevel | null;
+  latest_maslow_note: string | null;
   latest_validated_at: string | null;
   avg_stars: number | null;
   ratings_count: number;

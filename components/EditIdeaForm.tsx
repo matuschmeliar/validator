@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Idea } from "@/lib/db";
+import { MaslowLevel } from "@/lib/rubric";
+import { MaslowPicker } from "@/components/MaslowPicker";
 
 export function EditIdeaForm({ idea }: { idea: Idea }) {
   const router = useRouter();
@@ -11,6 +13,7 @@ export function EditIdeaForm({ idea }: { idea: Idea }) {
   const [horizont, setHorizont] = useState(idea.horizont ?? "");
   const [tags, setTags] = useState(idea.tags?.join(", ") ?? "");
   const [bodyMd, setBodyMd] = useState(idea.body_md);
+  const [maslowLevel, setMaslowLevel] = useState<MaslowLevel | null>(idea.maslow_level);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -28,6 +31,7 @@ export function EditIdeaForm({ idea }: { idea: Idea }) {
           horizont: horizont || null,
           tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
           body_md: bodyMd,
+          maslow_level: maslowLevel,
         }),
       });
       if (!res.ok) {
@@ -80,6 +84,9 @@ export function EditIdeaForm({ idea }: { idea: Idea }) {
       </div>
       <Field label="Tagy (čiarkami)">
         <input value={tags} onChange={(e) => setTags(e.target.value)} className="fa-input" />
+      </Field>
+      <Field label="Maslowova úroveň">
+        <MaslowPicker value={maslowLevel} onChange={setMaslowLevel} />
       </Field>
       <Field label="Telo (markdown)">
         <textarea

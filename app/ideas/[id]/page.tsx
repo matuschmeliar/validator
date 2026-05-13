@@ -7,6 +7,7 @@ import { ScoreTable } from "@/components/ScoreTable";
 import { ValidateButton } from "@/components/ValidateButton";
 import { RatingStars } from "@/components/RatingStars";
 import { CommentList } from "@/components/CommentList";
+import { MaslowView } from "@/components/MaslowView";
 
 export const dynamic = "force-dynamic";
 
@@ -133,9 +134,18 @@ export default async function IdeaDetail({ params }: { params: { id: string } })
                 </div>
 
                 {!latest ? (
-                  <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, margin: 0 }}>
-                    Idea ešte nebola validovaná. Klikni „Validovať" pre prvý report.
-                  </p>
+                  <>
+                    <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, margin: 0 }}>
+                      Idea ešte nebola validovaná. Klikni „Validovať" pre prvý report.
+                    </p>
+                    {idea.maslow_level != null && (
+                      <MaslowView
+                        authorLevel={idea.maslow_level}
+                        claudeLevel={null}
+                        claudeNote={null}
+                      />
+                    )}
+                  </>
                 ) : (
                   <>
                     <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginBottom: 18 }}>
@@ -145,6 +155,11 @@ export default async function IdeaDetail({ params }: { params: { id: string } })
                       <span style={{ fontSize: 18, color: "rgba(255,255,255,0.35)" }}>/ 5</span>
                     </div>
                     <ScoreTable scores={latest.scores} />
+                    <MaslowView
+                      authorLevel={idea.maslow_level}
+                      claudeLevel={latest.maslow_level}
+                      claudeNote={latest.maslow_note}
+                    />
                     <div className="prose-sk" style={{ marginTop: 18 }}>
                       <MarkdownView source={latest.summary_md} />
                     </div>

@@ -10,6 +10,7 @@ const UpdateIdea = z.object({
   horizont: z.string().max(50).nullable().optional(),
   tags: z.array(z.string()).max(20).optional(),
   body_md: z.string().min(10).max(50000).optional(),
+  maslow_level: z.number().int().min(1).max(5).nullable().optional(),
 });
 
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {

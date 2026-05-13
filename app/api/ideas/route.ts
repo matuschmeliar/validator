@@ -10,6 +10,7 @@ const CreateIdea = z.object({
   horizont: z.string().max(50).nullable(),
   tags: z.array(z.string()).max(20).default([]),
   body_md: z.string().min(10).max(50000),
+  maslow_level: z.number().int().min(1).max(5).nullable().default(null),
 });
 
 export async function GET(req: NextRequest) {
@@ -51,6 +52,7 @@ export async function POST(req: NextRequest) {
         horizont: body.horizont,
         tags: body.tags,
         body_md: body.body_md,
+        maslow_level: body.maslow_level,
         author_email: email,
       })
       .select()
