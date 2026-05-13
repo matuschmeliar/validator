@@ -4,22 +4,70 @@ import type { Scores } from "@/lib/db";
 export function ScoreTable({ scores }: { scores: Scores | Record<string, number> }) {
   const order: AxisKey[] = ["alignment", "tech", "ethics", "economy", "deps", "moat"];
   return (
-    <table className="w-full text-sm border border-[var(--border)] rounded">
+    <table
+      style={{
+        width: "100%",
+        borderCollapse: "separate",
+        borderSpacing: 0,
+        fontSize: 13,
+        border: "1px solid rgba(255,255,255,0.06)",
+        borderRadius: 10,
+        overflow: "hidden",
+      }}
+    >
       <thead>
-        <tr className="text-left text-xs uppercase text-[var(--muted)] border-b border-[var(--border)]">
-          <th className="py-2 px-3">Os</th>
-          <th className="py-2 px-3 text-right">Skóre</th>
-          <th className="py-2 px-3 text-right">Váha</th>
+        <tr>
+          {["Os", "Skóre", "Váha"].map((h, i) => (
+            <th
+              key={h}
+              style={{
+                textAlign: i === 0 ? "left" : "right",
+                fontSize: 10,
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                color: "rgba(255,255,255,0.4)",
+                padding: "12px 14px",
+                fontWeight: 500,
+                background: "rgba(255,255,255,0.02)",
+                borderBottom: "1px solid rgba(255,255,255,0.06)",
+              }}
+            >
+              {h}
+            </th>
+          ))}
         </tr>
       </thead>
       <tbody>
-        {order.map((k) => (
-          <tr key={k} className="border-b border-[var(--border)] last:border-0">
-            <td className="py-1.5 px-3">{AXIS_LABELS_SK[k]}</td>
-            <td className="py-1.5 px-3 text-right font-mono">
+        {order.map((k, i) => (
+          <tr key={k}>
+            <td
+              style={{
+                padding: "10px 14px",
+                borderBottom: i < order.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none",
+                color: "rgba(255,255,255,0.85)",
+              }}
+            >
+              {AXIS_LABELS_SK[k]}
+            </td>
+            <td
+              style={{
+                padding: "10px 14px",
+                borderBottom: i < order.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none",
+                textAlign: "right",
+                fontVariantNumeric: "tabular-nums",
+              }}
+            >
               <Bar value={(scores as Record<string, number>)[k]} />
             </td>
-            <td className="py-1.5 px-3 text-right text-[var(--muted)]">
+            <td
+              style={{
+                padding: "10px 14px",
+                borderBottom: i < order.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none",
+                textAlign: "right",
+                color: "rgba(255,255,255,0.4)",
+                fontVariantNumeric: "tabular-nums",
+              }}
+            >
               {(RUBRIC_WEIGHTS[k] * 100).toFixed(0)} %
             </td>
           </tr>
@@ -32,14 +80,34 @@ export function ScoreTable({ scores }: { scores: Scores | Record<string, number>
 function Bar({ value }: { value: number }) {
   const pct = (value / 5) * 100;
   return (
-    <div className="inline-flex items-center gap-2 justify-end">
-      <span>{value}/5</span>
-      <span className="inline-block w-16 h-1.5 bg-[#1f242b] rounded-full overflow-hidden">
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 10,
+        justifyContent: "flex-end",
+      }}
+    >
+      <span style={{ color: "#fff" }}>{value}/5</span>
+      <span
+        style={{
+          display: "inline-block",
+          width: 64,
+          height: 4,
+          background: "rgba(255,255,255,0.05)",
+          borderRadius: 999,
+          overflow: "hidden",
+        }}
+      >
         <span
-          className="block h-full bg-[var(--accent)]"
-          style={{ width: `${pct}%` }}
+          style={{
+            display: "block",
+            height: "100%",
+            width: `${pct}%`,
+            background: "linear-gradient(90deg, #DC1F3D 0%, #FF6A7A 100%)",
+          }}
         />
       </span>
-    </div>
+    </span>
   );
 }

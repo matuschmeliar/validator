@@ -58,45 +58,70 @@ export function CommentList({
 
   return (
     <div>
-      <ul className="space-y-3 mb-6">
+      <ul style={{ listStyle: "none", padding: 0, margin: "0 0 20px", display: "flex", flexDirection: "column", gap: 10 }}>
         {comments.length === 0 && (
-          <li className="text-[var(--muted)] text-sm">Žiadne komentáre.</li>
+          <li style={{ color: "rgba(255,255,255,0.45)", fontSize: 13 }}>Žiadne komentáre.</li>
         )}
         {comments.map((c) => (
-          <li key={c.id} className="border border-[var(--border)] rounded p-3">
-            <div className="flex items-center justify-between text-xs text-[var(--muted)] mb-2">
-              <span>{c.author_email}</span>
-              <div className="flex items-center gap-3">
+          <li
+            key={c.id}
+            style={{
+              padding: "12px 14px",
+              border: "1px solid rgba(255,255,255,0.06)",
+              borderRadius: 10,
+              background: "rgba(255,255,255,0.02)",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                fontSize: 11,
+                color: "rgba(255,255,255,0.5)",
+                marginBottom: 8,
+              }}
+            >
+              <span style={{ fontWeight: 500 }}>{c.author_email.split("@")[0]}</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                 <span>{new Date(c.created_at).toLocaleString("sk-SK")}</span>
                 {c.author_email === myEmail && (
                   <button
                     onClick={() => remove(c.id)}
-                    className="hover:text-red-400"
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      color: "rgba(255,255,255,0.4)",
+                      fontSize: 11,
+                      cursor: "pointer",
+                    }}
                   >
                     zmazať
                   </button>
                 )}
               </div>
             </div>
-            <div className="prose-sk text-sm">
+            <div className="prose-sk" style={{ fontSize: 13 }}>
               <MarkdownView source={c.body_md} />
             </div>
           </li>
         ))}
       </ul>
 
-      <form onSubmit={submit} className="space-y-2">
+      <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Markdown podporovaný…"
-          className="w-full bg-[#11151a] border border-[var(--border)] rounded px-3 py-2 text-sm min-h-[100px] font-mono"
+          className="fa-input"
+          style={{ minHeight: 90, fontFamily: "ui-monospace, monospace", fontSize: 13 }}
         />
-        {err && <p className="text-red-400 text-xs">{err}</p>}
+        {err && <p style={{ color: "#FF8A95", fontSize: 12, margin: 0 }}>{err}</p>}
         <button
           type="submit"
           disabled={busy || !text.trim()}
-          className="text-sm bg-[var(--accent)] text-black rounded px-3 py-1.5 disabled:opacity-50"
+          className="fa-pill primary"
+          style={{ alignSelf: "flex-start" }}
         >
           {busy ? "Posielam…" : "Pridať komentár"}
         </button>

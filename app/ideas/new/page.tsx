@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function NewIdeaPage() {
   const router = useRouter();
@@ -43,84 +44,119 @@ export default function NewIdeaPage() {
   }
 
   return (
-    <div className="max-w-3xl">
-      <h1 className="text-2xl font-semibold mb-6">Pridať ideu</h1>
-      <form onSubmit={submit} className="space-y-4">
-        <Field label="Názov *">
-          <input
-            required
-            minLength={3}
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className={inputCls}
-            placeholder="napr. Memory Mesh"
-          />
-        </Field>
+    <div className="fa-stage">
+      <div className="fa-stage-top-light" />
+      <div className="fa-chrome" style={{ padding: "32px 40px 40px", minHeight: "calc(100vh - 48px)" }}>
+        <div style={{ maxWidth: 760, margin: "0 auto" }}>
+          <Link
+            href="/"
+            style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", textDecoration: "none" }}
+          >
+            ← Späť na dashboard
+          </Link>
+          <h1
+            style={{
+              margin: "12px 0 6px",
+              fontSize: 28,
+              fontWeight: 600,
+              letterSpacing: "-0.02em",
+              color: "#fff",
+            }}
+          >
+            Pridať ideu
+          </h1>
+          <p style={{ margin: "0 0 28px", color: "rgba(255,255,255,0.5)", fontSize: 13 }}>
+            Zapíš víziu, ktorú chceš dať Claude na validáciu proti 6-osému rubricu.
+          </p>
 
-        <div className="grid grid-cols-2 gap-4">
-          <Field label="Smer">
-            <select
-              value={smer}
-              onChange={(e) => setSmer(e.target.value as "A" | "B" | "C" | "")}
-              className={inputCls}
-            >
-              <option value="">—</option>
-              <option value="A">A — Využitie dát</option>
-              <option value="B">B</option>
-              <option value="C">C</option>
-            </select>
-          </Field>
-          <Field label="Horizont">
-            <input
-              value={horizont}
-              onChange={(e) => setHorizont(e.target.value)}
-              className={inputCls}
-              placeholder="napr. 2026, 2-5 rokov, sci-fi"
-            />
-          </Field>
+          <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <Field label="Názov *">
+              <input
+                required
+                minLength={3}
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="fa-input"
+                placeholder="napr. Memory Mesh"
+              />
+            </Field>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+              <Field label="Smer">
+                <select
+                  value={smer}
+                  onChange={(e) => setSmer(e.target.value as "A" | "B" | "C" | "")}
+                  className="fa-input"
+                >
+                  <option value="">—</option>
+                  <option value="A">A — Využitie dát</option>
+                  <option value="B">B</option>
+                  <option value="C">C</option>
+                </select>
+              </Field>
+              <Field label="Horizont">
+                <input
+                  value={horizont}
+                  onChange={(e) => setHorizont(e.target.value)}
+                  className="fa-input"
+                  placeholder="napr. 2026, 2-5 rokov, sci-fi"
+                />
+              </Field>
+            </div>
+
+            <Field label="Tagy (čiarkami oddelené)">
+              <input
+                value={tags}
+                onChange={(e) => setTags(e.target.value)}
+                className="fa-input"
+                placeholder="LLM, on-device, families"
+              />
+            </Field>
+
+            <Field label="Telo idey (markdown) *">
+              <textarea
+                required
+                minLength={10}
+                value={bodyMd}
+                onChange={(e) => setBodyMd(e.target.value)}
+                className="fa-input"
+                style={{ minHeight: 320, fontFamily: "ui-monospace, monospace", fontSize: 13 }}
+                placeholder="Popíš ideu, kontext, prepojenia na iné nápady, čo je potrebné aby existovala…"
+              />
+            </Field>
+
+            {err && <p style={{ color: "#FF8A95", fontSize: 13, margin: 0 }}>{err}</p>}
+
+            <div style={{ display: "flex", gap: 10 }}>
+              <button type="submit" disabled={busy} className="fa-pill primary">
+                {busy ? "Ukladám…" : "Uložiť ideu"}
+              </button>
+              <Link href="/" className="fa-pill">
+                Zrušiť
+              </Link>
+            </div>
+          </form>
         </div>
-
-        <Field label="Tagy (čiarkami oddelené)">
-          <input
-            value={tags}
-            onChange={(e) => setTags(e.target.value)}
-            className={inputCls}
-            placeholder="LLM, on-device, families"
-          />
-        </Field>
-
-        <Field label="Telo idey (markdown) *">
-          <textarea
-            required
-            minLength={10}
-            value={bodyMd}
-            onChange={(e) => setBodyMd(e.target.value)}
-            className={inputCls + " min-h-[300px] font-mono text-sm"}
-            placeholder="Popíš ideu, kontext, prepojenia na iné nápady, čo je potrebné aby existovala..."
-          />
-        </Field>
-
-        {err && <p className="text-red-400 text-sm">{err}</p>}
-
-        <button
-          type="submit"
-          disabled={busy}
-          className="bg-[var(--accent)] text-black font-medium rounded px-4 py-2 disabled:opacity-50"
-        >
-          {busy ? "Ukladám…" : "Uložiť ideu"}
-        </button>
-      </form>
+      </div>
     </div>
   );
 }
 
-const inputCls =
-  "w-full bg-[#11151a] border border-[var(--border)] rounded px-3 py-2 text-sm focus:outline-none focus:border-[var(--accent)]";
-
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <label className="block">
-      <span className="block text-xs text-[var(--muted)] mb-1">{label}</span>
+    <label style={{ display: "block" }}>
+      <span
+        style={{
+          display: "block",
+          fontSize: 11,
+          color: "rgba(255,255,255,0.5)",
+          marginBottom: 6,
+          textTransform: "uppercase",
+          letterSpacing: "0.06em",
+        }}
+      >
+        {label}
+      </span>
       {children}
     </label>
   );

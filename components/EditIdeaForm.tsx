@@ -56,20 +56,17 @@ export function EditIdeaForm({ idea }: { idea: Idea }) {
     }
   }
 
-  const inputCls =
-    "w-full bg-[#11151a] border border-[var(--border)] rounded px-3 py-2 text-sm focus:outline-none focus:border-[var(--accent)]";
-
   return (
-    <form onSubmit={save} className="space-y-4">
+    <form onSubmit={save} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       <Field label="Názov">
-        <input value={title} onChange={(e) => setTitle(e.target.value)} className={inputCls} />
+        <input value={title} onChange={(e) => setTitle(e.target.value)} className="fa-input" />
       </Field>
-      <div className="grid grid-cols-2 gap-4">
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
         <Field label="Smer">
           <select
             value={smer}
             onChange={(e) => setSmer(e.target.value as "A" | "B" | "C" | "")}
-            className={inputCls}
+            className="fa-input"
           >
             <option value="">—</option>
             <option value="A">A</option>
@@ -78,33 +75,38 @@ export function EditIdeaForm({ idea }: { idea: Idea }) {
           </select>
         </Field>
         <Field label="Horizont">
-          <input value={horizont} onChange={(e) => setHorizont(e.target.value)} className={inputCls} />
+          <input value={horizont} onChange={(e) => setHorizont(e.target.value)} className="fa-input" />
         </Field>
       </div>
       <Field label="Tagy (čiarkami)">
-        <input value={tags} onChange={(e) => setTags(e.target.value)} className={inputCls} />
+        <input value={tags} onChange={(e) => setTags(e.target.value)} className="fa-input" />
       </Field>
       <Field label="Telo (markdown)">
         <textarea
           value={bodyMd}
           onChange={(e) => setBodyMd(e.target.value)}
-          className={inputCls + " min-h-[400px] font-mono text-sm"}
+          className="fa-input"
+          style={{ minHeight: 360, fontFamily: "ui-monospace, monospace", fontSize: 13 }}
         />
       </Field>
-      {err && <p className="text-red-400 text-sm">{err}</p>}
-      <div className="flex items-center justify-between">
-        <button
-          type="submit"
-          disabled={busy}
-          className="bg-[var(--accent)] text-black font-medium rounded px-4 py-2 disabled:opacity-50"
-        >
-          {busy ? "Ukladám…" : "Uložiť"}
-        </button>
+      {err && <p style={{ color: "#FF8A95", fontSize: 13, margin: 0 }}>{err}</p>}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", gap: 10 }}>
+          <button type="submit" disabled={busy} className="fa-pill primary">
+            {busy ? "Ukladám…" : "Uložiť"}
+          </button>
+        </div>
         <button
           type="button"
           onClick={remove}
           disabled={busy}
-          className="text-sm text-red-400 hover:text-red-300"
+          style={{
+            background: "transparent",
+            border: "none",
+            color: "#FF8A95",
+            fontSize: 12,
+            cursor: "pointer",
+          }}
         >
           Zmazať ideu
         </button>
@@ -115,8 +117,19 @@ export function EditIdeaForm({ idea }: { idea: Idea }) {
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <label className="block">
-      <span className="block text-xs text-[var(--muted)] mb-1">{label}</span>
+    <label style={{ display: "block" }}>
+      <span
+        style={{
+          display: "block",
+          fontSize: 11,
+          color: "rgba(255,255,255,0.5)",
+          marginBottom: 6,
+          textTransform: "uppercase",
+          letterSpacing: "0.06em",
+        }}
+      >
+        {label}
+      </span>
       {children}
     </label>
   );

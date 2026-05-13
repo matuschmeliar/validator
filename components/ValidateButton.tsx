@@ -30,20 +30,17 @@ export function ValidateButton({ ideaId }: { ideaId: string }) {
   }
 
   return (
-    <div className="flex items-center gap-2">
-      {err && <span className="text-xs text-red-400">{err}</span>}
-      <button
-        onClick={() => run(false)}
-        disabled={busy}
-        className="text-sm border border-[var(--accent)] text-[var(--accent)] rounded px-3 py-1.5 hover:bg-[#0e201a] disabled:opacity-50"
-      >
-        {busy ? "Validujem…" : "Validovať (Sonnet)"}
+    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      {err && <span style={{ fontSize: 11, color: "#FF8A95" }}>{err}</span>}
+      <button onClick={() => run(false)} disabled={busy} className="fa-pill primary">
+        {busy ? "Validujem…" : "Validovať"}
       </button>
       <button
         onClick={() => run(true)}
         disabled={busy}
-        className="text-xs text-[var(--muted)] hover:text-white disabled:opacity-50"
+        className="fa-pill"
         title="Hlbšia validácia s Claude Opus"
+        style={{ fontSize: 11 }}
       >
         Deep
       </button>

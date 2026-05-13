@@ -10,6 +10,12 @@ import { CommentList } from "@/components/CommentList";
 
 export const dynamic = "force-dynamic";
 
+const SMER_HUE: Record<string, string> = {
+  A: "#FF6A7A",
+  B: "#5A8AE6",
+  C: "#A0C8FF",
+};
+
 export default async function IdeaDetail({ params }: { params: { id: string } }) {
   const db = supabaseAdmin();
   const myEmail = (await readSessionEmail()) ?? "";
@@ -38,116 +44,226 @@ export default async function IdeaDetail({ params }: { params: { id: string } })
     ratings.length > 0 ? ratings.reduce((a, r) => a + r.stars, 0) / ratings.length : null;
 
   const isAuthor = idea.author_email === myEmail;
+  const hue = SMER_HUE[idea.smer ?? ""] ?? "#71717A";
 
   return (
-    <div>
-      <Link href="/" className="text-sm text-[var(--muted)] hover:text-white">← späť</Link>
-
-      <div className="flex items-start justify-between mt-3">
-        <div>
-          <h1 className="text-2xl font-semibold">{idea.title}</h1>
-          <p className="text-sm text-[var(--muted)] mt-1">
-            {idea.smer && <span className="mr-3">Smer {idea.smer}</span>}
-            {idea.horizont && <span className="mr-3">Horizont: {idea.horizont}</span>}
-            <span>autor: {idea.author_email}</span>
-          </p>
-          {idea.tags?.length > 0 && (
-            <div className="flex gap-2 mt-2">
-              {idea.tags.map((t) => (
-                <span key={t} className="text-xs bg-[#161a1f] border border-[var(--border)] rounded px-2 py-0.5">
-                  {t}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-        {isAuthor && (
-          <Link
-            href={`/ideas/${idea.id}/edit`}
-            className="text-xs text-[var(--muted)] border border-[var(--border)] rounded px-2 py-1 hover:text-white"
-          >
-            Upraviť
+    <div className="fa-stage">
+      <div className="fa-stage-top-light" />
+      <div className="fa-chrome" style={{ padding: "28px 40px 48px", minHeight: "calc(100vh - 48px)" }}>
+        <div style={{ maxWidth: 920, margin: "0 auto" }}>
+          <Link href="/" style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", textDecoration: "none" }}>
+            ← Späť na dashboard
           </Link>
-        )}
-      </div>
 
-      <section className="mt-8">
-        <h2 className="text-sm uppercase text-[var(--muted)] mb-2">Telo</h2>
-        <div className="prose-sk">
-          <MarkdownView source={idea.body_md} />
-        </div>
-      </section>
-
-      <section className="mt-10 border-t border-[var(--border)] pt-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">Claude validácia</h2>
-          <ValidateButton ideaId={idea.id} />
-        </div>
-
-        {!latest ? (
-          <p className="text-[var(--muted)] text-sm">
-            Idea ešte nebola validovaná. Klikni „Validovať" pre prvý report.
-          </p>
-        ) : (
-          <>
-            <div className="text-3xl font-semibold mb-1">
-              {latest.weighted_score.toFixed(2)}{" "}
-              <span className="text-sm text-[var(--muted)] font-normal">/ 5</span>
-            </div>
-            <p className="text-xs text-[var(--muted)] mb-4">
-              {latest.model} · {new Date(latest.created_at).toLocaleString("sk-SK")} · {latest.created_by_email}
-            </p>
-            <ScoreTable scores={latest.scores} />
-            <div className="prose-sk mt-4">
-              <MarkdownView source={latest.summary_md} />
-            </div>
-            {latest.next_step && (
-              <div className="mt-4 border-l-2 border-[var(--accent)] pl-4">
-                <div className="text-xs uppercase text-[var(--muted)] mb-1">Ďalší krok</div>
-                <div>{latest.next_step}</div>
+          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginTop: 16, gap: 24 }}>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+                {idea.smer && (
+                  <span
+                    className="fa-icon-tile"
+                    style={{
+                      width: 28,
+                      height: 28,
+                      fontSize: 11,
+                      fontWeight: 700,
+                      background: `linear-gradient(180deg, ${hue}26 0%, ${hue}0d 100%)`,
+                      borderColor: `${hue}33`,
+                      color: hue,
+                    }}
+                  >
+                    {idea.smer}
+                  </span>
+                )}
+                <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>
+                  {idea.horizont && <>Horizont: {idea.horizont} · </>}autor: {idea.author_email}
+                </span>
               </div>
+              <h1 style={{ margin: 0, fontSize: 32, fontWeight: 600, letterSpacing: "-0.025em", lineHeight: 1.15, color: "#fff" }}>
+                {idea.title}
+              </h1>
+              {idea.tags?.length > 0 && (
+                <div style={{ display: "flex", gap: 6, marginTop: 14, flexWrap: "wrap" }}>
+                  {idea.tags.map((t) => (
+                    <span
+                      key={t}
+                      style={{
+                        fontSize: 11,
+                        padding: "4px 10px",
+                        background: "rgba(255,255,255,0.04)",
+                        border: "1px solid rgba(255,255,255,0.08)",
+                        borderRadius: 999,
+                        color: "rgba(255,255,255,0.7)",
+                      }}
+                    >
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+            {isAuthor && (
+              <Link href={`/ideas/${idea.id}/edit`} className="fa-pill">
+                Upraviť
+              </Link>
             )}
-          </>
-        )}
+          </div>
 
-        {reports.length > 1 && (
-          <details className="mt-6">
-            <summary className="text-sm text-[var(--muted)] cursor-pointer hover:text-white">
-              História validácií ({reports.length - 1} starších)
-            </summary>
-            <ul className="mt-3 space-y-2 text-sm">
-              {reports.slice(1).map((r) => (
-                <li key={r.id} className="border border-[var(--border)] rounded p-3">
-                  <div className="flex justify-between text-xs text-[var(--muted)] mb-1">
-                    <span>{new Date(r.created_at).toLocaleString("sk-SK")} · {r.model}</span>
-                    <span className="font-mono">{r.weighted_score.toFixed(2)}</span>
-                  </div>
-                  <div className="prose-sk text-sm">
-                    <MarkdownView source={r.summary_md} />
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </details>
-        )}
-      </section>
+          {/* Body */}
+          <section style={{ marginTop: 32 }}>
+            <SectionLabel>Telo</SectionLabel>
+            <div className="prose-sk" style={{ marginTop: 8 }}>
+              <MarkdownView source={idea.body_md} />
+            </div>
+          </section>
 
-      <section className="mt-10 border-t border-[var(--border)] pt-6">
-        <h2 className="text-lg font-semibold mb-3">Hodnotenie tímu</h2>
-        <div className="flex items-center gap-4">
-          <RatingStars ideaId={idea.id} initial={myRating} />
-          <span className="text-sm text-[var(--muted)]">
-            {avgStars
-              ? `Priemer ${avgStars.toFixed(1)} z ${ratings.length}`
-              : "Zatiaľ bez hodnotenia"}
-          </span>
+          {/* Validation */}
+          <section style={{ marginTop: 36 }}>
+            <div className="fa-card">
+              <div className="fa-card-inner" style={{ padding: 24 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18, gap: 12 }}>
+                  <div>
+                    <SectionLabel>Claude validácia</SectionLabel>
+                    {latest && (
+                      <div style={{ marginTop: 8, fontSize: 11, color: "rgba(255,255,255,0.4)" }}>
+                        {latest.model} · {new Date(latest.created_at).toLocaleString("sk-SK")} · {latest.created_by_email}
+                      </div>
+                    )}
+                  </div>
+                  <ValidateButton ideaId={idea.id} />
+                </div>
+
+                {!latest ? (
+                  <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, margin: 0 }}>
+                    Idea ešte nebola validovaná. Klikni „Validovať" pre prvý report.
+                  </p>
+                ) : (
+                  <>
+                    <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginBottom: 18 }}>
+                      <span className="fa-score-grad" style={{ fontSize: 56, lineHeight: 1 }}>
+                        {latest.weighted_score.toFixed(2)}
+                      </span>
+                      <span style={{ fontSize: 18, color: "rgba(255,255,255,0.35)" }}>/ 5</span>
+                    </div>
+                    <ScoreTable scores={latest.scores} />
+                    <div className="prose-sk" style={{ marginTop: 18 }}>
+                      <MarkdownView source={latest.summary_md} />
+                    </div>
+                    {latest.next_step && (
+                      <div
+                        style={{
+                          marginTop: 18,
+                          padding: "14px 16px",
+                          background: "rgba(255, 77, 94, 0.06)",
+                          border: "1px solid rgba(255, 77, 94, 0.2)",
+                          borderRadius: 10,
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: 10,
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                            color: "#FF8A95",
+                            marginBottom: 6,
+                            fontWeight: 500,
+                          }}
+                        >
+                          Ďalší krok
+                        </div>
+                        <div style={{ fontSize: 14, color: "#fff", lineHeight: 1.55 }}>{latest.next_step}</div>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {reports.length > 1 && (
+                  <details style={{ marginTop: 20 }}>
+                    <summary
+                      style={{
+                        fontSize: 12,
+                        color: "rgba(255,255,255,0.5)",
+                        cursor: "pointer",
+                      }}
+                    >
+                      História validácií ({reports.length - 1} starších)
+                    </summary>
+                    <ul style={{ marginTop: 12, listStyle: "none", padding: 0, display: "flex", flexDirection: "column", gap: 10 }}>
+                      {reports.slice(1).map((r) => (
+                        <li
+                          key={r.id}
+                          style={{
+                            padding: "12px 14px",
+                            border: "1px solid rgba(255,255,255,0.06)",
+                            borderRadius: 10,
+                            background: "rgba(255,255,255,0.02)",
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              fontSize: 11,
+                              color: "rgba(255,255,255,0.4)",
+                              marginBottom: 6,
+                            }}
+                          >
+                            <span>
+                              {new Date(r.created_at).toLocaleString("sk-SK")} · {r.model}
+                            </span>
+                            <span className="fa-score-grad" style={{ fontSize: 14 }}>
+                              {r.weighted_score.toFixed(2)}
+                            </span>
+                          </div>
+                          <div className="prose-sk" style={{ fontSize: 12 }}>
+                            <MarkdownView source={r.summary_md} />
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
+                )}
+              </div>
+            </div>
+          </section>
+
+          {/* Ratings */}
+          <section style={{ marginTop: 28 }}>
+            <SectionLabel>Hodnotenie tímu</SectionLabel>
+            <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 10 }}>
+              <RatingStars ideaId={idea.id} initial={myRating} />
+              <span style={{ fontSize: 13, color: "rgba(255,255,255,0.5)" }}>
+                {avgStars
+                  ? `Priemer ${avgStars.toFixed(1)} z ${ratings.length}`
+                  : "Zatiaľ bez hodnotenia"}
+              </span>
+            </div>
+          </section>
+
+          {/* Comments */}
+          <section style={{ marginTop: 32 }}>
+            <SectionLabel>Komentáre</SectionLabel>
+            <div style={{ marginTop: 12 }}>
+              <CommentList ideaId={idea.id} comments={comments} myEmail={myEmail} />
+            </div>
+          </section>
         </div>
-      </section>
+      </div>
+    </div>
+  );
+}
 
-      <section className="mt-10 border-t border-[var(--border)] pt-6">
-        <h2 className="text-lg font-semibold mb-3">Komentáre</h2>
-        <CommentList ideaId={idea.id} comments={comments} myEmail={myEmail} />
-      </section>
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      style={{
+        fontSize: 11,
+        color: "rgba(255,255,255,0.45)",
+        textTransform: "uppercase",
+        letterSpacing: "0.08em",
+        fontWeight: 500,
+      }}
+    >
+      {children}
     </div>
   );
 }
