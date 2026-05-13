@@ -395,3 +395,21 @@ html, body {
 .prose-sk a { color: var(--accent-2); text-decoration: underline; }
 .prose-sk strong { color: var(--text); }
 .prose-sk hr { border: 0; border-top: 1px solid var(--border); margin: 1.2em 0; }
+
+/* ── Skeleton (loading placeholder) ── */
+.fa-skel {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.03) 0%,
+    rgba(255, 255, 255, 0.08) 40%,
+    rgba(255, 255, 255, 0.03) 80%
+  );
+  background-size: 200% 100%;
+  animation: fa-skel-pulse 1.4s ease-in-out infinite;
+  border-radius: 6px;
+}
+@keyframes fa-skel-pulse {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+

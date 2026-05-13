@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { MarkdownView } from "./MarkdownView";
 
 type Comment = {
@@ -12,38 +11,56 @@ type Comment = {
   created_at: string;
 };
 
+type Pending = Comment & { _pending?: boolean };
+
 export function CommentList({
   ideaId,
-  comments,
+  comments: initial,
   myEmail,
 }: {
   ideaId: string;
   comments: Comment[];
   myEmail: string;
 }) {
-  const router = useRouter();
+  const [comments, setComments] = useState<Pending[]>(initial);
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!text.trim()) return;
+    const trimmed = text.trim();
+    if (!trimmed) return;
+
+    const tempId = `temp-${Date.now()}`;
+    const optimistic: Pending = {
+      id: tempId,
+      idea_id: ideaId,
+      author_email: myEmail,
+      body_md: trimmed,
+      created_at: new Date().toISOString(),
+      _pending: true,
+    };
+    setComments((prev) => [...prev, optimistic]);
+    setText("");
     setBusy(true);
     setErr(null);
+
     try {
       const res = await fetch(`/api/ideas/${ideaId}/comments`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ body_md: text }),
+        body: JSON.stringify({ body_md: trimmed }),
       });
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
         throw new Error(j.error ?? "Nepodarilo sa odoslať");
       }
-      setText("");
-      router.refresh();
+      const { comment } = await res.json();
+      setComments((prev) => prev.map((c) => (c.id === tempId ? comment : c)));
     } catch (e) {
+      setComments((prev) => prev.filter((c) => c.id !== tempId));
+      setText(trimmed);
       setErr(e instanceof Error ? e.message : "Nepodarilo sa odoslať");
     } finally {
       setBusy(false);
@@ -52,8 +69,21 @@ export function CommentList({
 
   async function remove(id: string) {
     if (!confirm("Zmazať komentár?")) return;
-    const res = await fetch(`/api/comments/${id}`, { method: "DELETE" });
-    if (res.ok) router.refresh();
+    const removed = comments.find((c) => c.id === id);
+    setComments((prev) => prev.filter((c) => c.id !== id));
+    try {
+      const res = await fetch(`/api/comments/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error();
+    } catch {
+      if (removed) {
+        setComments((prev) => {
+          const i = initial.findIndex((c) => c.id === id);
+          const next = [...prev];
+          next.splice(i >= 0 ? i : next.length, 0, removed);
+          return next;
+        });
+      }
+    }
   }
 
   return (
@@ -70,6 +100,8 @@ export function CommentList({
               border: "1px solid rgba(255,255,255,0.06)",
               borderRadius: 10,
               background: "rgba(255,255,255,0.02)",
+              opacity: c._pending ? 0.6 : 1,
+              transition: "opacity 200ms",
             }}
           >
             <div
@@ -82,10 +114,17 @@ export function CommentList({
                 marginBottom: 8,
               }}
             >
-              <span style={{ fontWeight: 500 }}>{c.author_email.split("@")[0]}</span>
+              <span style={{ fontWeight: 500 }}>
+                {c.author_email.split("@")[0]}
+                {c._pending && (
+                  <span style={{ marginLeft: 8, color: "rgba(255,255,255,0.35)", fontWeight: 400 }}>
+                    posielam…
+                  </span>
+                )}
+              </span>
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                 <span>{new Date(c.created_at).toLocaleString("sk-SK")}</span>
-                {c.author_email === myEmail && (
+                {c.author_email === myEmail && !c._pending && (
                   <button
                     onClick={() => remove(c.id)}
                     style={{
