@@ -25,12 +25,20 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       .single();
     if (getErr) throw getErr;
 
+    const { data: attachments, error: attErr } = await db
+      .from("idea_attachments")
+      .select("*")
+      .eq("idea_id", params.id)
+      .order("created_at", { ascending: true });
+    if (attErr) throw attErr;
+
     const { json, model } = await validateIdea({
       title: idea.title,
       smer: idea.smer,
       horizont: idea.horizont,
       body_md: idea.body_md,
       maslow_level: idea.maslow_level,
+      attachments: attachments ?? [],
       model: deep ? DEEP_MODEL : DEFAULT_MODEL,
     });
 

@@ -6,6 +6,9 @@ import Link from "next/link";
 import { MaslowLevel } from "@/lib/rubric";
 import { MaslowPicker } from "@/components/MaslowPicker";
 
+const MAX_MB = 25;
+const ALLOWED_EXT = ".pdf,.docx,.xlsx,.png,.jpg,.jpeg";
+
 export default function NewIdeaPage() {
   const router = useRouter();
   const [title, setTitle] = useState("");
@@ -14,8 +17,23 @@ export default function NewIdeaPage() {
   const [tags, setTags] = useState("");
   const [bodyMd, setBodyMd] = useState("");
   const [maslowLevel, setMaslowLevel] = useState<MaslowLevel | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [uploadStatus, setUploadStatus] = useState<string | null>(null);
+
+  function addFiles(picked: FileList | null) {
+    if (!picked) return;
+    const next: File[] = [];
+    for (const f of Array.from(picked)) {
+      if (f.size > MAX_MB * 1024 * 1024) {
+        setErr(`"${f.name}" je väčší než ${MAX_MB} MB`);
+        continue;
+      }
+      next.push(f);
+    }
+    setFiles((prev) => [...prev, ...next].slice(0, 10));
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -39,11 +57,28 @@ export default function NewIdeaPage() {
         throw new Error(j.error ?? "Nepodarilo sa uložiť");
       }
       const { idea } = await res.json();
+
+      for (let i = 0; i < files.length; i++) {
+        const f = files[i];
+        setUploadStatus(`Nahrávam (${i + 1}/${files.length}) ${f.name}…`);
+        const fd = new FormData();
+        fd.append("file", f);
+        const up = await fetch(`/api/ideas/${idea.id}/attachments`, {
+          method: "POST",
+          body: fd,
+        });
+        if (!up.ok) {
+          const j = await up.json().catch(() => ({}));
+          throw new Error(`Upload "${f.name}" zlyhal: ${j.error ?? up.status}`);
+        }
+      }
+
       router.push(`/ideas/${idea.id}`);
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Nepodarilo sa uložiť");
     } finally {
       setBusy(false);
+      setUploadStatus(null);
     }
   }
 
@@ -133,7 +168,84 @@ export default function NewIdeaPage() {
               />
             </Field>
 
+            <Field label="Prílohy (PDF, Word, Excel, obrázky)">
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {files.length > 0 && (
+                  <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 6 }}>
+                    {files.map((f, i) => (
+                      <li
+                        key={`${f.name}-${i}`}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          gap: 8,
+                          padding: "6px 12px",
+                          background: "rgba(255,255,255,0.03)",
+                          border: "1px solid rgba(255,255,255,0.07)",
+                          borderRadius: 8,
+                          fontSize: 13,
+                          color: "rgba(255,255,255,0.85)",
+                        }}
+                      >
+                        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {f.name} <span style={{ color: "rgba(255,255,255,0.4)", marginLeft: 6 }}>{(f.size / 1024 / 1024).toFixed(2)} MB</span>
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setFiles((prev) => prev.filter((_, j) => j !== i))}
+                          disabled={busy}
+                          style={{
+                            background: "transparent",
+                            border: "none",
+                            color: "#FF8A95",
+                            fontSize: 11,
+                            cursor: "pointer",
+                          }}
+                        >
+                          Odstrániť
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <label
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "8px 14px",
+                    border: "1px dashed rgba(255,255,255,0.15)",
+                    borderRadius: 8,
+                    cursor: busy ? "not-allowed" : "pointer",
+                    fontSize: 13,
+                    color: "rgba(255,255,255,0.7)",
+                    width: "fit-content",
+                  }}
+                >
+                  + Pridať súbor
+                  <input
+                    type="file"
+                    multiple
+                    accept={ALLOWED_EXT}
+                    disabled={busy}
+                    style={{ display: "none" }}
+                    onChange={(e) => {
+                      addFiles(e.target.files);
+                      e.target.value = "";
+                    }}
+                  />
+                </label>
+                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)" }}>
+                  Max {MAX_MB} MB / súbor, max 10 / ideu. Claude ich pri validácii prečíta.
+                </div>
+              </div>
+            </Field>
+
             {err && <p style={{ color: "#FF8A95", fontSize: 13, margin: 0 }}>{err}</p>}
+            {uploadStatus && (
+              <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 13, margin: 0 }}>{uploadStatus}</p>
+            )}
 
             <div style={{ display: "flex", gap: 10 }}>
               <button type="submit" disabled={busy} className="fa-pill primary">

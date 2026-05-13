@@ -79,3 +79,14 @@ export type IdeaWithLatest = Idea & {
   ratings_count: number;
   comments_count: number;
 };
+
+export type IdeaAttachment = {
+  id: string;
+  idea_id: string;
+  filename: string;
+  mime: string;
+  size_bytes: number;
+  storage_path: string;
+  uploaded_by_email: string;
+  created_at: string;
+};

@@ -6,6 +6,8 @@ import {
   MaslowLevel,
   MASLOW_LABELS_SK,
 } from "./rubric";
+import type { IdeaAttachment } from "./db";
+import { attachmentsToContentBlocks } from "./attachments";
 
 let _client: Anthropic | null = null;
 function client(): Anthropic {
@@ -25,6 +27,7 @@ export async function validateIdea(opts: {
   horizont: string | null;
   body_md: string;
   maslow_level: MaslowLevel | null;
+  attachments?: IdeaAttachment[];
   model?: string;
 }): Promise<{ json: ValidationJson; model: string }> {
   const model = opts.model ?? DEFAULT_MODEL;
@@ -34,7 +37,7 @@ export async function validateIdea(opts: {
       ? `## Autorov Maslow odhad\n${opts.maslow_level} — ${MASLOW_LABELS_SK[opts.maslow_level]}`
       : null;
 
-  const userMessage = [
+  const headerText = [
     `# Idea: ${opts.title}`,
     opts.smer ? `**Smer:** ${opts.smer}` : null,
     opts.horizont ? `**Horizont:** ${opts.horizont}` : null,
@@ -47,6 +50,19 @@ export async function validateIdea(opts: {
     .filter((x) => x !== null)
     .join("\n");
 
+  const userContent: Anthropic.ContentBlockParam[] = [
+    { type: "text", text: headerText },
+  ];
+
+  if (opts.attachments && opts.attachments.length > 0) {
+    userContent.push({
+      type: "text",
+      text: `\n## Prílohy\nIdea má ${opts.attachments.length} priložených súborov. Posúď ich obsah ako kontext, ale rubric stále aplikuj na ideu ako celok.`,
+    });
+    const attBlocks = await attachmentsToContentBlocks(opts.attachments);
+    userContent.push(...attBlocks);
+  }
+
   const res = await client().messages.create({
     model,
     max_tokens: 2000,
@@ -58,7 +74,7 @@ export async function validateIdea(opts: {
         cache_control: { type: "ephemeral" },
       },
     ],
-    messages: [{ role: "user", content: userMessage }],
+    messages: [{ role: "user", content: userContent }],
   });
 
   const text = res.content

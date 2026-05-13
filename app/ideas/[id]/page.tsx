@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { supabaseAdmin, Idea, ValidationReport } from "@/lib/db";
+import { supabaseAdmin, Idea, ValidationReport, IdeaAttachment } from "@/lib/db";
 import { readSessionEmail } from "@/lib/auth";
 import { MarkdownView } from "@/components/MarkdownView";
 import { ScoreTable } from "@/components/ScoreTable";
@@ -8,6 +8,7 @@ import { ValidateButton } from "@/components/ValidateButton";
 import { RatingStars } from "@/components/RatingStars";
 import { CommentList } from "@/components/CommentList";
 import { MaslowView } from "@/components/MaslowView";
+import { AttachmentManager } from "@/components/AttachmentManager";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +22,7 @@ export default async function IdeaDetail({ params }: { params: { id: string } })
   const db = supabaseAdmin();
   const myEmail = (await readSessionEmail()) ?? "";
 
-  const [ideaRes, reportsRes, ratingsRes, commentsRes] = await Promise.all([
+  const [ideaRes, reportsRes, ratingsRes, commentsRes, attachmentsRes] = await Promise.all([
     db.from("ideas").select("*").eq("id", params.id).single(),
     db
       .from("validation_reports")
@@ -30,6 +31,11 @@ export default async function IdeaDetail({ params }: { params: { id: string } })
       .order("created_at", { ascending: false }),
     db.from("ratings").select("*").eq("idea_id", params.id),
     db.from("comments").select("*").eq("idea_id", params.id).order("created_at", { ascending: true }),
+    db
+      .from("idea_attachments")
+      .select("*")
+      .eq("idea_id", params.id)
+      .order("created_at", { ascending: true }),
   ]);
 
   if (ideaRes.error || !ideaRes.data) notFound();
@@ -38,6 +44,7 @@ export default async function IdeaDetail({ params }: { params: { id: string } })
   const reports = (reportsRes.data ?? []) as ValidationReport[];
   const ratings = ratingsRes.data ?? [];
   const comments = commentsRes.data ?? [];
+  const attachments = (attachmentsRes.data ?? []) as IdeaAttachment[];
 
   const latest = reports[0] ?? null;
   const myRating = ratings.find((r) => r.author_email === myEmail)?.stars ?? null;
@@ -238,6 +245,18 @@ export default async function IdeaDetail({ params }: { params: { id: string } })
                   </details>
                 )}
               </div>
+            </div>
+          </section>
+
+          {/* Attachments */}
+          <section style={{ marginTop: 32 }}>
+            <SectionLabel>Prílohy</SectionLabel>
+            <div style={{ marginTop: 12 }}>
+              <AttachmentManager
+                ideaId={idea.id}
+                initial={attachments}
+                canEdit={isAuthor}
+              />
             </div>
           </section>
 
