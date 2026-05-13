@@ -58,6 +58,7 @@ export type ValidationReport = {
   id: string;
   idea_id: string;
   scores: Record<string, number>;
+  axis_notes: Record<string, string> | null;
   weighted_score: number;
   summary_md: string;
   next_step: string | null;

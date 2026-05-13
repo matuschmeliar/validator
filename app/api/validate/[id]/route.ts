@@ -94,6 +94,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       .insert({
         idea_id: params.id,
         scores,
+        axis_notes,
         weighted_score: score,
         summary_md,
         next_step,
@@ -107,7 +108,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       .single();
     if (insErr) throw insErr;
 
-    return NextResponse.json({ report, axis_notes });
+    return NextResponse.json({ report });
   } catch (e) {
     return errorResponse(e);
   }
