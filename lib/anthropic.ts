@@ -11,8 +11,57 @@ import {
   YCValidationJson,
   YCAxisKey,
 } from "./yc-rubric";
-import type { IdeaAttachment, IdeaAmendment } from "./db";
+import { supabaseAdmin } from "./db";
+import type { IdeaAttachment, IdeaAmendment, KnowledgeDocument } from "./db";
 import { attachmentsToContentBlocks } from "./attachments";
+
+async function loadActiveKnowledge(): Promise<KnowledgeDocument[]> {
+  const { data, error } = await supabaseAdmin()
+    .from("knowledge_documents")
+    .select("*")
+    .eq("active", true)
+    .order("created_at", { ascending: true });
+  if (error) return [];
+  return (data ?? []) as KnowledgeDocument[];
+}
+
+function buildSystemBlocks(
+  basePrompt: string,
+  knowledge: KnowledgeDocument[]
+): Array<{ type: "text"; text: string; cache_control?: { type: "ephemeral" } }> {
+  if (knowledge.length === 0) {
+    return [
+      {
+        type: "text",
+        text: basePrompt,
+        cache_control: { type: "ephemeral" },
+      },
+    ];
+  }
+  const kbText = [
+    "## DIUS knowledge base",
+    "Nižšie sú interné DIUS dokumenty (manifest, vízie, kontextové poznámky). Použi ich pri hodnotení **alignment** osi (a kde inde sedia) ako autoritatívny zdroj. Cituj konkrétne dokumenty / state-y, keď argumentuješ.",
+    "",
+    ...knowledge.map(
+      (d) => `### ${d.title}\n${d.content_md}`
+    ),
+  ].join("\n\n");
+
+  // Two cache breakpoints: base rubric + knowledge. Both ephemeral, so second
+  // call within ~5 min reuses both.
+  return [
+    {
+      type: "text",
+      text: basePrompt,
+      cache_control: { type: "ephemeral" },
+    },
+    {
+      type: "text",
+      text: kbText,
+      cache_control: { type: "ephemeral" },
+    },
+  ];
+}
 
 let _client: Anthropic | null = null;
 function client(): Anthropic {
@@ -103,18 +152,15 @@ export async function validateIdea(
   opts: IdeaContext & { model?: string }
 ): Promise<{ json: ValidationJson; model: string }> {
   const model = opts.model ?? DEFAULT_MODEL;
-  const userContent = await buildUserContent(opts);
+  const [userContent, knowledge] = await Promise.all([
+    buildUserContent(opts),
+    loadActiveKnowledge(),
+  ]);
 
   const res = await client().messages.create({
     model,
     max_tokens: 2000,
-    system: [
-      {
-        type: "text",
-        text: SYSTEM_PROMPT,
-        cache_control: { type: "ephemeral" },
-      },
-    ],
+    system: buildSystemBlocks(SYSTEM_PROMPT, knowledge),
     messages: [{ role: "user", content: userContent }],
   });
 

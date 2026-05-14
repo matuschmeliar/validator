@@ -110,3 +110,13 @@ export type IdeaAmendment = {
   author_email: string;
   created_at: string;
 };
+
+export type KnowledgeDocument = {
+  id: string;
+  title: string;
+  content_md: string;
+  active: boolean;
+  uploaded_by_email: string;
+  created_at: string;
+  updated_at: string;
+};

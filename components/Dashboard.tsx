@@ -145,6 +145,21 @@ export function Dashboard({ stats, myEmail }: Props) {
                 </div>
               </div>
             </Link>
+            <Link href="/knowledge" style={{ textDecoration: "none" }}>
+              <div className="fa-nav-row">
+                <span className="fa-icon-tile">
+                  <BookIcon />
+                </span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13, color: "rgba(255,255,255,0.85)", fontWeight: 500 }}>
+                    Knowledge base
+                  </div>
+                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 1 }}>
+                    DIUS kontext pre manifest
+                  </div>
+                </div>
+              </div>
+            </Link>
           </nav>
 
         </aside>
@@ -1164,6 +1179,14 @@ function ReportIcon() {
     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.6">
       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
       <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
+    </svg>
+  );
+}
+function BookIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.6">
+      <path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v17H6.5A2.5 2.5 0 0 0 4 21.5z" />
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
     </svg>
   );
 }
