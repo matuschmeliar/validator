@@ -89,9 +89,9 @@ html, body {
   right: -340px; bottom: -400px;
   width: 1200px; height: 1000px;
   background: radial-gradient(circle at center,
-    rgba(40, 90, 240, 0.75) 0%,
-    rgba(70, 130, 250, 0.40) 20%,
-    rgba(50, 100, 240, 0.14) 42%,
+    rgba(255, 70, 110, 0.55) 0%,
+    rgba(220, 50, 80, 0.28) 20%,
+    rgba(180, 40, 70, 0.10) 42%,
     transparent 62%);
   filter: blur(40px);
 }
@@ -112,8 +112,8 @@ html, body {
   z-index: 2;
   background:
     radial-gradient(ellipse 60% 55% at 0% 100%,   rgba(255, 35, 55, 0.72) 0%,  rgba(255, 75, 95, 0.32) 20%, rgba(220, 30, 50, 0.10) 40%, transparent 65%),
-    radial-gradient(ellipse 65% 60% at 100% 100%, rgba(50, 110, 250, 0.70) 0%, rgba(70, 140, 250, 0.32) 22%, rgba(50, 110, 240, 0.10) 42%, transparent 65%),
-    radial-gradient(ellipse 90% 30% at 50% 100%,  rgba(180, 60, 120, 0.18) 0%, transparent 60%),
+    radial-gradient(ellipse 65% 60% at 100% 100%, rgba(255, 90, 120, 0.50) 0%, rgba(255, 110, 140, 0.24) 22%, rgba(220, 60, 90, 0.08) 42%, transparent 65%),
+    radial-gradient(ellipse 90% 30% at 50% 100%,  rgba(220, 80, 110, 0.16) 0%, transparent 60%),
     radial-gradient(ellipse 80% 35% at 50% -5%,   rgba(255, 255, 255, 0.05), transparent 60%),
     linear-gradient(180deg, #07070A 0%, #030304 100%);
   border-radius: 24px;
