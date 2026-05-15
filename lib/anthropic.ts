@@ -159,7 +159,7 @@ export async function validateIdea(
 
   const res = await client().messages.create({
     model,
-    max_tokens: 2000,
+    max_tokens: 4096,
     system: buildSystemBlocks(SYSTEM_PROMPT, knowledge),
     messages: [{ role: "user", content: userContent }],
   });
@@ -176,7 +176,7 @@ export async function validateIdeaYC(
 
   const res = await client().messages.create({
     model,
-    max_tokens: 2000,
+    max_tokens: 4096,
     system: [
       {
         type: "text",
@@ -215,8 +215,22 @@ function normalizeStructured(parsed: Record<string, unknown>): void {
   }
 }
 
+function parseJsonOrThrow(text: string): any {
+  const cleaned = stripFences(text);
+  try {
+    return JSON.parse(cleaned);
+  } catch (e) {
+    const tail = cleaned.length > 200 ? cleaned.slice(-200) : cleaned;
+    throw new Error(
+      `Claude returned invalid JSON (${cleaned.length} chars). ` +
+        `${e instanceof Error ? e.message : String(e)}. ` +
+        `Pravdepodobne max_tokens hit. Tail: ${JSON.stringify(tail)}`
+    );
+  }
+}
+
 function parseValidationJson(text: string): ValidationJson {
-  const parsed = JSON.parse(stripFences(text));
+  const parsed = parseJsonOrThrow(text);
 
   const axes: AxisKey[] = ["alignment", "tech", "ethics", "economy", "deps", "moat"];
   for (const a of axes) {
@@ -240,7 +254,7 @@ function parseValidationJson(text: string): ValidationJson {
 }
 
 function parseYCValidationJson(text: string): YCValidationJson {
-  const parsed = JSON.parse(stripFences(text));
+  const parsed = parseJsonOrThrow(text);
 
   const axes: YCAxisKey[] = [
     "demand",
