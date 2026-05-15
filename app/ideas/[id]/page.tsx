@@ -58,20 +58,20 @@ export default async function IdeaDetail({ params }: { params: { id: string } })
   return (
     <div className="fa-stage">
       <div className="fa-stage-top-light" />
-      <div className="fa-chrome" style={{ padding: "28px 40px 48px", minHeight: "calc(100vh - 48px)" }}>
+      <div className="fa-chrome fa-page-pad" style={{ padding: "28px 40px 48px", minHeight: "calc(100vh - 48px)" }}>
         <div style={{ maxWidth: 920, margin: "0 auto" }}>
           <Link href="/" style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", textDecoration: "none" }}>
             ← Späť na dashboard
           </Link>
 
-          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginTop: 16, gap: 24 }}>
+          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginTop: 16, gap: 16, flexWrap: "wrap" }}>
             <div style={{ minWidth: 0, flex: 1 }}>
               <div style={{ marginBottom: 10 }}>
                 <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>
                   {idea.horizont && <>Horizont: {idea.horizont} · </>}autor: {idea.author_email}
                 </span>
               </div>
-              <h1 style={{ margin: 0, fontSize: 32, fontWeight: 600, letterSpacing: "-0.025em", lineHeight: 1.15, color: "#fff" }}>
+              <h1 className="fa-h1" style={{ margin: 0, fontSize: 32, fontWeight: 600, letterSpacing: "-0.025em", lineHeight: 1.15, color: "#fff" }}>
                 {idea.title}
               </h1>
               {idea.tags?.length > 0 && (

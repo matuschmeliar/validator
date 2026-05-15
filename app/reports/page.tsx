@@ -15,7 +15,7 @@ export default async function ReportsPage() {
   return (
     <div className="fa-stage">
       <div className="fa-stage-top-light" />
-      <div className="fa-chrome" style={{ padding: "32px 40px 40px", minHeight: "calc(100vh - 48px)" }}>
+      <div className="fa-chrome fa-page-pad" style={{ padding: "32px 40px 40px", minHeight: "calc(100vh - 48px)" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           <Link href="/" style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", textDecoration: "none" }}>
             ← Späť na dashboard
@@ -48,8 +48,8 @@ export default async function ReportsPage() {
             </div>
           ) : (
             <div className="fa-card">
-              <div className="fa-card-inner" style={{ padding: 0 }}>
-                <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: 0, fontSize: 13 }}>
+              <div className="fa-card-inner" style={{ padding: 0, overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: 0, fontSize: 13, minWidth: 600 }}>
                   <thead>
                     <tr>
                       {["#", "Idea", "Autor", "Skóre", "Posledná"].map((h) => (

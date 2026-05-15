@@ -24,7 +24,13 @@ export function Dashboard({ stats, myEmail }: Props) {
   const [sort, setSort] = useState<"score" | "recent" | "stars">("score");
   const [search, setSearch] = useState("");
   const [activeNav, setActiveNav] = useState<"overview" | "ideas" | "validated" | "unvalidated">("overview");
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const isOverview = activeNav === "overview" || activeNav === "ideas";
+
+  function pickNav(v: typeof activeNav) {
+    setActiveNav(v);
+    setMobileNavOpen(false);
+  }
 
   const filtered = useMemo(() => {
     let list = [...stats.ideas];
@@ -56,7 +62,7 @@ export function Dashboard({ stats, myEmail }: Props) {
     <div className="fa-stage" style={{ color: "#fff" }}>
       <div className="fa-stage-top-light" />
       <div
-        className="fa-chrome"
+        className="fa-chrome fa-shell-grid"
         style={{
           display: "grid",
           gridTemplateColumns: "260px 1fr",
@@ -65,6 +71,7 @@ export function Dashboard({ stats, myEmail }: Props) {
       >
         {/* ── Sidebar ── */}
         <aside
+          className={`fa-sidebar ${mobileNavOpen ? "open" : ""}`}
           style={{
             display: "flex",
             flexDirection: "column",
@@ -91,13 +98,13 @@ export function Dashboard({ stats, myEmail }: Props) {
           <div className="fa-segments" style={{ marginBottom: 22 }}>
             <button
               className={`fa-segment ${activeNav === "overview" || activeNav === "ideas" ? "active" : ""}`}
-              onClick={() => setActiveNav("overview")}
+              onClick={() => pickNav("overview")}
             >
               Idey
             </button>
             <button
               className={`fa-segment ${activeNav === "validated" ? "active" : ""}`}
-              onClick={() => setActiveNav("validated")}
+              onClick={() => pickNav("validated")}
             >
               Validované
             </button>
@@ -113,7 +120,7 @@ export function Dashboard({ stats, myEmail }: Props) {
               icon={<GridIcon />}
               active={activeNav === "overview" || activeNav === "ideas"}
               accent={ACCENT}
-              onClick={() => setActiveNav("overview")}
+              onClick={() => pickNav("overview")}
             />
             <NavRow
               label="Validované"
@@ -123,7 +130,7 @@ export function Dashboard({ stats, myEmail }: Props) {
               active={activeNav === "validated"}
               accent={GREEN}
               badge={GREEN}
-              onClick={() => setActiveNav("validated")}
+              onClick={() => pickNav("validated")}
             />
             <NavRow
               label="Bez validácie"
@@ -132,7 +139,7 @@ export function Dashboard({ stats, myEmail }: Props) {
               icon={<ClockIcon />}
               active={activeNav === "unvalidated"}
               accent={"#F5B547"}
-              onClick={() => setActiveNav("unvalidated")}
+              onClick={() => pickNav("unvalidated")}
             />
             <Link href="/reports" style={{ textDecoration: "none" }}>
               <div className="fa-nav-row">
@@ -163,6 +170,10 @@ export function Dashboard({ stats, myEmail }: Props) {
           </nav>
 
         </aside>
+        <div
+          className="fa-sidebar-backdrop"
+          onClick={() => setMobileNavOpen(false)}
+        />
 
         {/* ── Main ── */}
         <main
@@ -174,8 +185,31 @@ export function Dashboard({ stats, myEmail }: Props) {
             minHeight: 0,
           }}
         >
+          {/* Mobile topbar (visible only < 768px) */}
+          <div className="fa-mobile-topbar">
+            <button
+              className="fa-hamburger"
+              onClick={() => setMobileNavOpen((v) => !v)}
+              aria-label="Otvoriť menu"
+            >
+              <HamburgerIcon />
+            </button>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span className="fa-orb" />
+              <span style={{ fontSize: 14, fontWeight: 600 }}>Idea Validator</span>
+            </div>
+            <Link
+              href="/ideas/new"
+              className="fa-pill primary"
+              style={{ padding: "6px 10px", fontSize: 12 }}
+            >
+              +
+            </Link>
+          </div>
+
           {/* Topbar */}
           <header
+            className="fa-topbar"
             style={{
               display: "flex",
               alignItems: "center",
@@ -193,8 +227,8 @@ export function Dashboard({ stats, myEmail }: Props) {
                 DIUS · {stats.total} {pluralize(stats.total, "idea", "idey", "ideí")} · {stats.validatedCount} validovaných
               </div>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-              <div className="fa-pill" style={{ padding: "7px 12px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0, flexWrap: "wrap" }}>
+              <div className="fa-pill fa-topbar-search" style={{ padding: "7px 12px" }}>
                 <SearchIcon />
                 <input
                   value={search}
@@ -207,11 +241,12 @@ export function Dashboard({ stats, myEmail }: Props) {
                     color: "#fff",
                     fontSize: 12,
                     width: 220,
+                    maxWidth: "100%",
                     fontFamily: "inherit",
                   }}
                 />
               </div>
-              <Link href="/ideas/new" className="fa-pill primary">
+              <Link href="/ideas/new" className="fa-pill primary fa-desktop-only">
                 <PlusIcon />
                 Pridať ideu
               </Link>
@@ -231,6 +266,7 @@ export function Dashboard({ stats, myEmail }: Props) {
           <>
           {/* KPI strip */}
           <div
+            className="fa-kpi-grid"
             style={{
               padding: "18px 24px 12px",
               display: "grid",
@@ -295,6 +331,7 @@ export function Dashboard({ stats, myEmail }: Props) {
 
           {/* Mid charts */}
           <div
+            className="fa-mid-grid"
             style={{
               padding: "6px 24px 12px",
               display: "grid",
@@ -563,8 +600,8 @@ export function Dashboard({ stats, myEmail }: Props) {
             </div>
           </div>
 
-          {/* Ideas table */}
-          <div style={{ padding: "2px 24px 28px" }}>
+          {/* Ideas table — desktop */}
+          <div className="fa-desktop-only" style={{ padding: "2px 24px 28px" }}>
             {filtered.length === 0 ? (
               <EmptyState />
             ) : (
@@ -595,6 +632,19 @@ export function Dashboard({ stats, myEmail }: Props) {
                   ))}
                 </tbody>
               </table>
+            )}
+          </div>
+
+          {/* Ideas card list — mobile */}
+          <div className="fa-mobile-only" style={{ padding: "12px 14px 28px" }}>
+            {filtered.length === 0 ? (
+              <EmptyState />
+            ) : (
+              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 8 }}>
+                {filtered.map((idea) => (
+                  <IdeaCardMobile key={idea.id} idea={idea} />
+                ))}
+              </ul>
             )}
           </div>
         </main>
@@ -1179,6 +1229,102 @@ function ReportIcon() {
     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.6">
       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
       <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
+    </svg>
+  );
+}
+function IdeaCardMobile({ idea }: { idea: IdeaWithLatest }) {
+  const initial = (idea.author_email[0] ?? "?").toUpperCase();
+  const maslow = idea.latest_maslow_level ?? idea.maslow_level;
+  return (
+    <li
+      onClick={() => {
+        window.location.href = `/ideas/${idea.id}`;
+      }}
+      style={{
+        padding: "12px 14px",
+        background: "rgba(255,255,255,0.025)",
+        border: "1px solid rgba(255,255,255,0.07)",
+        borderRadius: 10,
+        cursor: "pointer",
+      }}
+    >
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr auto",
+          gap: 10,
+          alignItems: "flex-start",
+        }}
+      >
+        <div style={{ minWidth: 0 }}>
+          <div
+            style={{
+              fontSize: 14,
+              fontWeight: 600,
+              color: "#fff",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
+            {idea.title}
+          </div>
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 8,
+              marginTop: 5,
+              alignItems: "center",
+              fontSize: 11,
+              color: "rgba(255,255,255,0.5)",
+            }}
+          >
+            {maslow != null && (
+              <span
+                style={{
+                  fontSize: 10,
+                  padding: "1px 6px",
+                  borderRadius: 999,
+                  background: `${MASLOW_HUE[maslow]}1f`,
+                  border: `1px solid ${MASLOW_HUE[maslow]}55`,
+                  color: MASLOW_HUE[maslow],
+                  fontWeight: 500,
+                }}
+              >
+                M{maslow}
+              </span>
+            )}
+            <span>
+              {idea.author_email.split("@")[0]}
+            </span>
+            {idea.horizont && <span>· {idea.horizont}</span>}
+          </div>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
+          {idea.latest_score !== null ? (
+            <span className="fa-score-grad" style={{ fontSize: 22, lineHeight: 1 }}>
+              {idea.latest_score.toFixed(2)}
+            </span>
+          ) : (
+            <span style={{ fontSize: 11, color: "rgba(255,255,255,0.3)" }}>—</span>
+          )}
+          <div style={{ display: "flex", gap: 8, fontSize: 10, color: "rgba(255,255,255,0.45)" }}>
+            {idea.avg_stars !== null && (
+              <span>★ {idea.avg_stars.toFixed(1)}</span>
+            )}
+            {idea.comments_count > 0 && <span>💬 {idea.comments_count}</span>}
+          </div>
+        </div>
+      </div>
+    </li>
+  );
+}
+
+function HamburgerIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+      <path d="M4 7h16M4 12h16M4 17h16" />
     </svg>
   );
 }

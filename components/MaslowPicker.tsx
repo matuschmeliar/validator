@@ -16,7 +16,7 @@ export function MaslowPicker({
   onChange: (v: MaslowLevel | null) => void;
 }) {
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 8 }}>
+    <div className="fa-maslow-grid" style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 8 }}>
       {MASLOW_LEVELS.map((lvl) => {
         const active = value === lvl;
         const hue = MASLOW_HUE[lvl];
@@ -31,6 +31,7 @@ export function MaslowPicker({
               borderRadius: 10,
               cursor: "pointer",
               textAlign: "left",
+              minWidth: 0,
               background: active
                 ? `linear-gradient(180deg, ${hue}33 0%, ${hue}14 100%)`
                 : "rgba(255,255,255,0.03)",

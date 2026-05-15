@@ -66,7 +66,7 @@ export function ReportCard({
           </div>
           <div style={{ display: "flex", alignItems: "baseline", gap: 6, flexShrink: 0 }}>
             <span
-              className="fa-score-grad"
+              className="fa-score-grad fa-score-big"
               style={{ fontSize: isLatest ? 48 : 32, lineHeight: 1 }}
             >
               {report.weighted_score.toFixed(2)}
@@ -145,6 +145,7 @@ export function ReportCard({
         {/* Strengths / Weaknesses side-by-side */}
         {(strengths.length > 0 || weaknesses.length > 0) && (
           <div
+            className="fa-sw-grid"
             style={{
               display: "grid",
               gridTemplateColumns: "1fr 1fr",

@@ -1,10 +1,17 @@
 import "./globals.css";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { GeistSans } from "geist/font/sans";
 
 export const metadata: Metadata = {
   title: "Idea Validator",
   description: "Validuj vizionárske idey proti 6-osému rubricu.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#07070A",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -21,7 +21,7 @@ export default async function KnowledgePage() {
     <div className="fa-stage">
       <div className="fa-stage-top-light" />
       <div
-        className="fa-chrome"
+        className="fa-chrome fa-page-pad"
         style={{ padding: "32px 40px 40px", minHeight: "calc(100vh - 48px)" }}
       >
         <div style={{ maxWidth: 920, margin: "0 auto" }}>

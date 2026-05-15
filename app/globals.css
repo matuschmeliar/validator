@@ -413,3 +413,120 @@ html, body {
   100% { background-position: -200% 0; }
 }
 
+/* ── Mobile responsive helpers ── */
+/* Visible only above mobile breakpoint. */
+.fa-desktop-only { display: initial; }
+.fa-mobile-only { display: none; }
+
+/* Mobile drawer + top bar */
+.fa-mobile-topbar {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .fa-desktop-only { display: none !important; }
+  .fa-mobile-only { display: initial; }
+
+  /* Trim chrome on mobile so content has room. */
+  .fa-chrome {
+    margin: 8px;
+    border-radius: 14px;
+    min-height: calc(100vh - 16px) !important;
+  }
+
+  /* Shell grid collapses to one column. */
+  .fa-shell-grid {
+    grid-template-columns: 1fr !important;
+    height: auto !important;
+  }
+
+  /* Sidebar slides in from left when .open, hidden otherwise. */
+  .fa-sidebar {
+    position: fixed !important;
+    inset: 0 auto 0 0;
+    width: 280px;
+    z-index: 60;
+    transform: translateX(-100%);
+    transition: transform 220ms ease;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .fa-sidebar.open {
+    transform: translateX(0);
+    box-shadow: 0 0 60px rgba(0, 0, 0, 0.7);
+  }
+  .fa-sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(2px);
+    z-index: 55;
+  }
+  .fa-sidebar.open + .fa-sidebar-backdrop {
+    display: block;
+  }
+
+  /* Mobile topbar (hamburger + brand). */
+  .fa-mobile-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    background: linear-gradient(180deg, rgba(12,12,14,0.85) 0%, rgba(6,6,8,0.85) 100%);
+    position: sticky;
+    top: 0;
+    z-index: 40;
+  }
+  .fa-hamburger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.03);
+    color: #fff;
+    cursor: pointer;
+  }
+
+  /* Stack 2-col / 3-col / 4-col grids. */
+  .fa-kpi-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .fa-mid-grid { grid-template-columns: 1fr !important; }
+  .fa-sw-grid { grid-template-columns: 1fr !important; }
+  .fa-form-2col { grid-template-columns: 1fr !important; }
+  .fa-maslow-grid { grid-template-columns: repeat(2, 1fr) !important; }
+
+  /* Detail / form padding. */
+  .fa-page-pad {
+    padding: 18px 16px 28px !important;
+  }
+  .fa-topbar {
+    padding: 14px 16px !important;
+    flex-wrap: wrap;
+    gap: 12px !important;
+  }
+  .fa-topbar-search {
+    width: 100% !important;
+    flex: 1;
+  }
+
+  /* Titles shrink. */
+  .fa-h1 {
+    font-size: 22px !important;
+  }
+  .fa-h2 {
+    font-size: 22px !important;
+  }
+  .fa-score-big { font-size: 36px !important; }
+
+  /* Table → card list. */
+  .fa-table-row-grid {
+    grid-template-columns: 1fr auto !important;
+    grid-template-rows: auto auto;
+    gap: 8px !important;
+  }
+}
+
+

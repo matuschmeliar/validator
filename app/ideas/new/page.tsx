@@ -83,7 +83,7 @@ export default function NewIdeaPage() {
   return (
     <div className="fa-stage">
       <div className="fa-stage-top-light" />
-      <div className="fa-chrome" style={{ padding: "32px 40px 40px", minHeight: "calc(100vh - 48px)" }}>
+      <div className="fa-chrome fa-page-pad" style={{ padding: "32px 40px 40px", minHeight: "calc(100vh - 48px)" }}>
         <div style={{ maxWidth: 760, margin: "0 auto" }}>
           <Link
             href="/"

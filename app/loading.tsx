@@ -3,7 +3,7 @@ export default function Loading() {
     <div className="fa-stage">
       <div className="fa-stage-top-light" />
       <div
-        className="fa-chrome"
+        className="fa-chrome fa-shell-grid"
         style={{
           display: "grid",
           gridTemplateColumns: "260px 1fr",
@@ -12,6 +12,7 @@ export default function Loading() {
       >
         {/* Sidebar skeleton */}
         <aside
+          className="fa-desktop-only"
           style={{
             padding: "20px 16px",
             borderRight: "1px solid rgba(255,255,255,0.05)",
@@ -73,6 +74,7 @@ export default function Loading() {
 
           {/* KPI strip */}
           <div
+            className="fa-kpi-grid"
             style={{
               padding: "18px 24px 12px",
               display: "grid",
@@ -96,6 +98,7 @@ export default function Loading() {
 
           {/* Mid charts */}
           <div
+            className="fa-mid-grid"
             style={{
               padding: "6px 24px 12px",
               display: "grid",

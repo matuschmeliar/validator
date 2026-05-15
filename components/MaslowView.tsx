@@ -65,7 +65,7 @@ export function MaslowView({
         )}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+      <div className="fa-sw-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         <MaslowSlot label="Autor" level={authorLevel} />
         <MaslowSlot label="Claude" level={claudeLevel} />
       </div>
