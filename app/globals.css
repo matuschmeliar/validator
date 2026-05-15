@@ -414,18 +414,14 @@ html, body {
 }
 
 /* ── Mobile responsive helpers ── */
-/* Visible only above mobile breakpoint. */
-.fa-desktop-only { display: initial; }
-.fa-mobile-only { display: none; }
-
-/* Mobile drawer + top bar */
-.fa-mobile-topbar {
-  display: none;
-}
+/* Base state: keep natural display on desktop-only, hide mobile-only and backdrop. */
+.fa-mobile-only { display: none !important; }
+.fa-sidebar-backdrop { display: none; }
+.fa-mobile-topbar { display: none; }
 
 @media (max-width: 768px) {
   .fa-desktop-only { display: none !important; }
-  .fa-mobile-only { display: initial; }
+  .fa-mobile-only { display: revert !important; }
 
   /* Trim chrome on mobile so content has room. */
   .fa-chrome {
@@ -454,16 +450,13 @@ html, body {
     transform: translateX(0);
     box-shadow: 0 0 60px rgba(0, 0, 0, 0.7);
   }
-  .fa-sidebar-backdrop {
-    display: none;
+  .fa-sidebar.open + .fa-sidebar-backdrop {
+    display: block;
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.55);
     backdrop-filter: blur(2px);
     z-index: 55;
-  }
-  .fa-sidebar.open + .fa-sidebar-backdrop {
-    display: block;
   }
 
   /* Mobile topbar (hamburger + brand). */
