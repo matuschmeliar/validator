@@ -76,24 +76,16 @@ html, body {
   z-index: 0;
 }
 .fa-stage::before {
-  left: -300px; bottom: -380px;
-  width: 1100px; height: 1000px;
+  left: -400px; bottom: -500px;
+  width: 900px; height: 800px;
   background: radial-gradient(circle at center,
-    rgba(255, 40, 60, 0.78) 0%,
-    rgba(255, 70, 90, 0.42) 18%,
-    rgba(220, 30, 50, 0.14) 40%,
-    transparent 62%);
-  filter: blur(40px);
+    rgba(255, 60, 80, 0.28) 0%,
+    rgba(220, 40, 60, 0.12) 28%,
+    transparent 60%);
+  filter: blur(60px);
 }
 .fa-stage::after {
-  right: -340px; bottom: -400px;
-  width: 1200px; height: 1000px;
-  background: radial-gradient(circle at center,
-    rgba(255, 70, 110, 0.55) 0%,
-    rgba(220, 50, 80, 0.28) 20%,
-    rgba(180, 40, 70, 0.10) 42%,
-    transparent 62%);
-  filter: blur(40px);
+  display: none;
 }
 .fa-stage-top-light {
   position: absolute;
@@ -111,10 +103,7 @@ html, body {
   position: relative;
   z-index: 2;
   background:
-    radial-gradient(ellipse 60% 55% at 0% 100%,   rgba(255, 35, 55, 0.72) 0%,  rgba(255, 75, 95, 0.32) 20%, rgba(220, 30, 50, 0.10) 40%, transparent 65%),
-    radial-gradient(ellipse 65% 60% at 100% 100%, rgba(255, 90, 120, 0.50) 0%, rgba(255, 110, 140, 0.24) 22%, rgba(220, 60, 90, 0.08) 42%, transparent 65%),
-    radial-gradient(ellipse 90% 30% at 50% 100%,  rgba(220, 80, 110, 0.16) 0%, transparent 60%),
-    radial-gradient(ellipse 80% 35% at 50% -5%,   rgba(255, 255, 255, 0.05), transparent 60%),
+    radial-gradient(ellipse 80% 35% at 50% -5%,   rgba(255, 255, 255, 0.04), transparent 60%),
     linear-gradient(180deg, #07070A 0%, #030304 100%);
   border-radius: 24px;
   overflow: hidden;
